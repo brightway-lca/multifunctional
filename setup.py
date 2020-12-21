@@ -9,7 +9,7 @@ version = ".".join((str(x) for x in v_temp["version"]))
 setup(
     name='multifunctional',
     version=version,
-    packages=["multifunctional"],
+    packages=["multifunctional", "multifunctional.handlers"],
     author="Chris Mutel",
     author_email="cmutel@gmail.com",
     license="BSD-3-Clause",
