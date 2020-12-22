@@ -6,10 +6,18 @@ Multifunctional activities can lead to linear algebra problems which don't have 
 
 This library is designed around the following workflow:
 
-1. Multifunctional activities are created and saved in their original form, with multiple functional flows. These flows can be either outputs (e.g. products) or input (e.g. waste treatment). Functional exchanges are either manually or automatically labeled as such: ``exchange_instance['functional'] = True``.
-1. Saving a functional flow will automatically create a new `product` node in the supply chain graph.
-1. Multifunctional activities must be given a handler function label: ``activity_instance['handler'] = 'some_handler_function_label'``. Handler function labels are strings.
-1. Handler functions are mapped in `multifuntional.handler_mapping`. This library provides a default set of handling functions (see below); users may also add custom handlers.
+1. A multifunctional activity is created and saved to the database by a user. A multifunctional activity is any activity with multiple functional flows, either outputs (e.g. products) or input (e.g. wastes).
+1. The user provides a handling function of this activity, such as substitution, allocation, etc.
+1. When this database is processed, this library will apply the handling function, and create a square matrix for the database.
+
+More functionality is planned; see [limitations](#limitations).
+
+## How does it work?
+
+1. Users label functional exchanges when creating them: ``exchange_instance['functional'] = True``.
+1. Saving a functional flow exchange will automatically create a new `product` node in the supply chain graph (if necessary).
+1. Users give multifunctional activities a handler function label: ``activity_instance['handler'] = 'some_handler_function_label'``. Handler function labels are strings.
+1. Handler functions are mapped in `multifunctional.handler_mapping`. This library provides a default set of handling functions (see below); users may also add custom handlers.
 1. When the database is processed, the handler functions are executed, and if necessary, virtual activities are created. The processed array will create a square matrix.
 
 ## Limitations
