@@ -14,11 +14,21 @@ More functionality is planned; see [limitations](#limitations).
 
 ## How does it work?
 
-1. Users label functional exchanges when creating them: ``exchange_instance['functional'] = True``.
-1. Saving a functional flow exchange will automatically create a new `product` node in the supply chain graph (if necessary).
-1. Users give multifunctional activities a handler function label: ``activity_instance['handler'] = 'some_handler_function_label'``. Handler function labels are strings.
-1. Handler functions are mapped in `multifunctional.handler_mapping`. This library provides a default set of handling functions (see below); users may also add custom handlers.
+1. LCA distinguishes processes and products. brightway introduces a new classification at the product level where products are either defined as goods or wastes. 
+   This classification is consistently maintained within a project, meaning that the same product cannot be classified as a good in one process and as a waste in another process.
+   Or in other words, all intermediate flows of the same product carry the same classification (good OR waste).
+1. brightway determines functional flows based on the good/waste classification of the flows of a process. 
+   Functional flows are defined as process outputs that are goods and process inputs that are wastes.
+
+1. Adding a functional flow exchange will automatically create a new `product` node in the supply chain graph (if necessary).
+1. Multi-functional processes are handled by handler functions. Handler functions are mapped in `multifunctional.handler_mapping`. This library provides a default set of handling functions (see below); users may also add custom handlers.
 1. When the database is processed, the handler functions are executed, and if necessary, virtual activities are created. The processed array will create a square matrix.
+
+## What does the user need to do?
+
+1. Users specify products to be either goods or wastes when creating them the first time (this can be changed later, but may lead to changes in multiple processes): ``product['waste'] = False``.
+1. Users need to specify which allocation method is to be used to resolve multi-functionality (e.g. economic allocation or substitution) and users need to provide the required data (e.g. prices or substitute product) so that multi-functionality can be resolved by one of the handlers.
+Users give multifunctional activities a handler function label: ``activity_instance['handler'] = 'some_handler_function_label'``. Handler function labels are strings.
 
 ## Limitations
 
