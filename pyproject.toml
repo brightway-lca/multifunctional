@@ -34,6 +34,7 @@ dependencies = [
     "bw_processing>=0.9.3",
     "matrix_utils",
     "numpy<2",
+    "loguru",
 ]
 
 [project.urls]
