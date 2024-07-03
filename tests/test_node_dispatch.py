@@ -10,3 +10,8 @@ def test_basic_setup(basic):
 
     process = bd.get_node(code="1")
     assert isinstance(process, mf.MultifunctionalProcess)
+
+    basic.metadata["default_allocation"] = "mass"
+    bd.get_node(code="1").allocate()
+    node = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))[2]
+    assert isinstance(node, mf.ReadOnlyProcessWithReferenceProduct)

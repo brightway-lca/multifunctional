@@ -29,10 +29,9 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "bw2calc>1.99",
-    "bw2data>=4.0.dev36",
-    "bw_processing>=0.9.3",
-    "matrix_utils",
+    "bw2data>=4.0.dev43",
+    "bw2io>=0.9.dev28",
+    "bw_processing>=0.9.5",
     "numpy<2",
     "loguru",
 ]
@@ -47,6 +46,7 @@ tracker = "https://github.com/brightway-lca/multifunctional/issues"
 # seems to work, at least for now
 testing = [
     "multifunctional",
+    "bw2calc>=2.0.dev17",
     "pytest",
     "pytest-cov",
     "python-coveralls"

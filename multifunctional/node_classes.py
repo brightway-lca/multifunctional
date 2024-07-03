@@ -88,10 +88,11 @@ class MultifunctionalProcess(BaseMultifunctionalNode):
 
 class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):
     def __setitem__(self, key, value):
-        raise NotImplemented(
+        raise NotImplementedError(
             "This node is read only. Update the corresponding multifunctional process."
         )
 
+    @property
     def parent(self):
         """Return the `MultifunctionalProcess` which generated this node object"""
         return get_node(id=self["multifunctional_parent_id"])
@@ -103,17 +104,17 @@ class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):
         super().save()
 
     def copy(self, *args, **kwargs):
-        raise NotImplemented(
+        raise NotImplementedError(
             "This node is read only. Update the corresponding multifunctional process."
         )
 
     def new_edge(self, **kwargs):
-        raise NotImplemented(
+        raise NotImplementedError(
             "This node is read only. Update the corresponding multifunctional process."
         )
 
     def delete(self):
-        raise NotImplemented(
+        raise NotImplementedError(
             "This node is read only. Update the corresponding multifunctional process."
         )
 

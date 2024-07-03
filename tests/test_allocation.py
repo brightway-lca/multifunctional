@@ -1,5 +1,6 @@
 import bw2data as bd
 
+from multifunctional.allocation import generic_allocation
 from multifunctional.node_classes import (
     MaybeMultifunctionalProcess,
     MultifunctionalProcess,
@@ -148,3 +149,15 @@ def test_allocation_uses_existing(basic):
     basic.metadata["default_allocation"] = "equal"
     bd.get_node(code="1").allocate()
     check_basic_allocation_results(5, 5, basic)
+
+
+def test_allocation_already_allocated(basic):
+    basic.metadata["default_allocation"] = "price"
+    bd.get_node(code="1").allocate()
+    node = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))[2]
+
+    assert generic_allocation(node, None) == []
+
+
+def test_allocation_not_multifunctional(basic):
+    assert generic_allocation(bd.get_node(code="a"), None) == []
