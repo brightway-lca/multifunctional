@@ -18,6 +18,10 @@ DATA = {
                 "name": "first product - 1",
                 "unit": "kg",
                 "amount": 4,
+                "properties": {
+                    "price": 7,
+                    "mass": 6,
+                },
             },
             {
                 "functional": True,
@@ -25,6 +29,10 @@ DATA = {
                 "name": "second product - 1",
                 "unit": "megajoule",
                 "amount": 6,
+                "properties": {
+                    "price": 12,
+                    "mass": 4,
+                },
             },
             {
                 "type": "biosphere",

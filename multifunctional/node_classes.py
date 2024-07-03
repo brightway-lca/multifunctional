@@ -6,6 +6,7 @@ from loguru import logger
 
 from .edge_classes import ReadOnlyExchanges
 from .errors import NoAllocationNeeded
+from .utils import update_datasets_from_allocation_results
 
 
 class MaybeMultifunctionalProcess(Activity):
@@ -14,25 +15,25 @@ class MaybeMultifunctionalProcess(Activity):
     Sets flag on save if multifunctional."""
 
     def functional_edges(self):
-        return (edge for edge in self.exchanges if edge.get("functional"))
+        return (edge for edge in self.exchanges() if edge.get("functional"))
 
     def nonfunctional_edges(self):
-        return (edge for edge in self.exchanges if not edge.get("functional"))
+        return (edge for edge in self.exchanges() if not edge.get("functional"))
 
     @property
     def has_multiple_functional_edges(self):
-        return len(list(self.functional_edges)) > 1
+        return len(list(self.functional_edges())) > 1
 
     def save(self):
         if self.has_multiple_functional_edges:
-            self["type"] = "multifunctional"
+            self._data["type"] = "multifunctional"
             logger.info(
                 "Process {p} is multifunctional - please reload with `get_node(id={i})`",
                 p=repr(self),
                 i=self.id,
             )
         else:
-            self["type"] = "process"
+            self._data["type"] = "process"
         super().save()
 
 
@@ -69,6 +70,9 @@ class MultifunctionalProcess(MaybeMultifunctionalProcess):
             s=strategy_label,
         )
 
+        allocated_data = allocation_strategies[strategy_label](self)
+        update_datasets_from_allocation_results(allocated_data)
+
     def rp_exchange(self):
         raise ValueError("Multifunctional processes have no reference product")
 
@@ -77,7 +81,7 @@ class MultifunctionalProcess(MaybeMultifunctionalProcess):
             self["type"] = "multifunctional"
         else:
             self["type"] = "process"
-        super().save()
+        super(Activity, self).save()
 
 
 class ReadOnlyProcessWithReferenceProduct(MaybeMultifunctionalProcess):
@@ -91,7 +95,7 @@ class ReadOnlyProcessWithReferenceProduct(MaybeMultifunctionalProcess):
         return get_node(id=self["multifunctional_parent_id"])
 
     def save(self):
-        self["type"] = "readonly_process"
+        self._data["type"] = "readonly_process"
         if not self.get("multifunctional_parent_id"):
             raise ValueError("Must specify `multifunctional_parent_id`")
         super().save()

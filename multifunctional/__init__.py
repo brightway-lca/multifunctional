@@ -15,8 +15,8 @@ from bw2data.subclass_mapping import (
     NODE_PROCESS_CLASS_MAPPING,
 )
 
-from .database import MultifunctionalDatabase
 from .allocation import allocation_strategies
+from .database import MultifunctionalDatabase
 from .node_classes import (
     MaybeMultifunctionalProcess,
     MultifunctionalProcess,

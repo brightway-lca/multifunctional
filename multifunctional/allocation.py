@@ -54,6 +54,7 @@ def generic_allocation(act: MaybeMultifunctionalProcess, func: Callable) -> List
             )
 
         new_process = deepcopy(act._data)
+        new_process["multifunctional_parent_id"] = act.id
         new_process["code"] = new_code
         new_process["type"] = "readonly_process"
         new_process["reference product"] = exc["name"]
@@ -75,16 +76,20 @@ def generic_allocation(act: MaybeMultifunctionalProcess, func: Callable) -> List
 def get_allocation_factor_from_property(
     exc: dict, act: MaybeMultifunctionalProcess, property_label: str
 ) -> float:
+    if "properties" not in exc:
+        raise KeyError(
+            f"Exchange {exc} from process {act} (id {act.id}) doesn't have properties"
+        )
     try:
         return exc["amount"] * exc["properties"][property_label]
     except KeyError as err:
         raise KeyError(
-            f"Activity {act} (id {act.id}) missing property label {property_label}"
+            f"Exchange {exc} from process {act} (id {act.id}) missing property {property_label}"
         ) from err
 
 
 allocation_strategies = {
-    "economic": partial(
+    "price": partial(
         generic_allocation,
         func=partial(get_allocation_factor_from_property, property_label="price"),
     ),
