@@ -9,11 +9,7 @@ from .errors import NoAllocationNeeded
 from .utils import update_datasets_from_allocation_results
 
 
-class MaybeMultifunctionalProcess(Activity):
-    """Default node class for nodes in `MultifunctionalDatabase`.
-
-    Sets flag on save if multifunctional."""
-
+class BaseMultifunctionalNode(Activity):
     def functional_edges(self):
         return (edge for edge in self.exchanges() if edge.get("functional"))
 
@@ -23,6 +19,12 @@ class MaybeMultifunctionalProcess(Activity):
     @property
     def has_multiple_functional_edges(self):
         return len(list(self.functional_edges())) > 1
+
+
+class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
+    """Default node class for nodes in `MultifunctionalDatabase`.
+
+    Sets flag on save if multifunctional."""
 
     def save(self):
         if self.has_multiple_functional_edges:
@@ -37,7 +39,7 @@ class MaybeMultifunctionalProcess(Activity):
         super().save()
 
 
-class MultifunctionalProcess(MaybeMultifunctionalProcess):
+class MultifunctionalProcess(BaseMultifunctionalNode):
     def allocate(
         self, strategy_label: Optional[str] = None
     ) -> Union[None, NoAllocationNeeded]:
@@ -81,10 +83,10 @@ class MultifunctionalProcess(MaybeMultifunctionalProcess):
             self["type"] = "multifunctional"
         else:
             self["type"] = "process"
-        super(Activity, self).save()
+        super().save()
 
 
-class ReadOnlyProcessWithReferenceProduct(MaybeMultifunctionalProcess):
+class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):
     def __setitem__(self, key, value):
         raise NotImplemented(
             "This node is read only. Update the corresponding multifunctional process."

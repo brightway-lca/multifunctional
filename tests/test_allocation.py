@@ -1,10 +1,150 @@
 import bw2data as bd
 
+from multifunctional.node_classes import (
+    MaybeMultifunctionalProcess,
+    MultifunctionalProcess,
+    ReadOnlyProcessWithReferenceProduct,
+)
 
-def test_basic_allocation(basic):
+
+def check_basic_allocation_results(factor_1, factor_2, database):
+    nodes = sorted(database, key=lambda x: (x["name"], x.get("reference product", "")))
+
+    assert isinstance(nodes[0], MaybeMultifunctionalProcess)
+    assert nodes[0]["name"] == "flow - a"
+    assert not list(nodes[0].exchanges())
+    assert len(nodes) == 4
+
+    assert isinstance(nodes[1], MultifunctionalProcess)
+    assert "reference product" not in nodes[1]
+    assert "multifunctional_parent_id" not in nodes[1]
+    expected = {
+        "name": "process - 1",
+        "type": "multifunctional",
+    }
+    for key, value in expected.items():
+        assert nodes[1][key] == value
+
+    for exc in nodes[1].production():
+        assert exc.get("allocated_product_code")
+
+    assert isinstance(nodes[2], ReadOnlyProcessWithReferenceProduct)
+    expected = {
+        "name": "process - 1",
+        "reference product": "first product - 1",
+        "unit": "kg",
+        "multifunctional_parent_id": nodes[1].id,
+        "type": "readonly_process",
+    }
+    for key, value in expected.items():
+        assert nodes[2][key] == value
+
+    expected = {
+        "input": nodes[2].key,
+        "output": nodes[2].key,
+        "amount": 4,
+        "type": "production",
+        "functional": True,
+    }
+    production = list(nodes[2].production())
+    assert len(production) == 1
+    for key, value in expected.items():
+        assert production[0][key] == value
+
+    expected = {
+        "input": nodes[0].key,
+        "output": nodes[2].key,
+        "amount": factor_1,
+        "type": "biosphere",
+    }
+    biosphere = list(nodes[2].biosphere())
+    assert len(biosphere) == 1
+    for key, value in expected.items():
+        assert biosphere[0][key] == value
+
+    assert not biosphere[0].get("functional")
+
+    assert isinstance(nodes[3], ReadOnlyProcessWithReferenceProduct)
+    expected = {
+        "name": "process - 1",
+        "reference product": "second product - 1",
+        "unit": "megajoule",
+        "multifunctional_parent_id": nodes[1].id,
+        "type": "readonly_process",
+    }
+    for key, value in expected.items():
+        assert nodes[3][key] == value
+
+    expected = {
+        "input": nodes[3].key,
+        "output": nodes[3].key,
+        "amount": 6,
+        "type": "production",
+        "functional": True,
+    }
+    production = list(nodes[3].production())
+    assert len(production) == 1
+    for key, value in expected.items():
+        assert production[0][key] == value
+
+    expected = {
+        "input": nodes[0].key,
+        "output": nodes[3].key,
+        "amount": factor_2,
+        "type": "biosphere",
+    }
+    biosphere = list(nodes[3].biosphere())
+    assert len(biosphere) == 1
+    for key, value in expected.items():
+        assert biosphere[0][key] == value
+
+    assert not biosphere[0].get("functional")
+
+
+def test_without_allocation(basic):
+    nodes = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))
+    assert len(nodes) == 2
+
+    assert isinstance(nodes[0], MaybeMultifunctionalProcess)
+    assert nodes[0]["name"] == "flow - a"
+    assert not list(nodes[0].exchanges())
+
+    assert isinstance(nodes[1], MultifunctionalProcess)
+    assert "reference product" not in nodes[1]
+    assert "multifunctional_parent_id" not in nodes[1]
+    expected = {
+        "name": "process - 1",
+        "type": "multifunctional",
+    }
+    for key, value in expected.items():
+        assert nodes[1][key] == value
+
+
+def test_price_allocation(basic):
     basic.metadata["default_allocation"] = "price"
-    process = bd.get_node(code="1")
-    process.allocate()
-    for ds in basic:
-        print(ds)
-    assert False
+    bd.get_node(code="1").allocate()
+    check_basic_allocation_results(
+        4 * 7 / (4 * 7 + 6 * 12) * 10, 6 * 12 / (4 * 7 + 6 * 12) * 10, basic
+    )
+
+
+def test_mass_allocation(basic):
+    basic.metadata["default_allocation"] = "mass"
+    bd.get_node(code="1").allocate()
+    check_basic_allocation_results(
+        4 * 6 / (4 * 6 + 6 * 4) * 10, 6 * 4 / (4 * 6 + 6 * 4) * 10, basic
+    )
+
+
+def test_equal_allocation(basic):
+    basic.metadata["default_allocation"] = "mass"
+    bd.get_node(code="1").allocate()
+    check_basic_allocation_results(5, 5, basic)
+
+
+def test_allocation_uses_existing(basic):
+    basic.metadata["default_allocation"] = "price"
+    bd.get_node(code="1").allocate()
+    basic.metadata["default_allocation"] = "equal"
+    bd.get_node(code="1").allocate()
+    check_basic_allocation_results(5, 5, basic)

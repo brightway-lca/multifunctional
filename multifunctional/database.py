@@ -1,5 +1,6 @@
 from bw2data import databases
 from bw2data.backends import SQLiteBackend
+from bw2data.backends.schema import ActivityDataset
 from bw_processing import (
     Datapackage,
     clean_datapackage_name,
@@ -8,7 +9,14 @@ from bw_processing import (
     safe_filename,
 )
 
+from .node_dispatch import multifunctional_node_dispatcher
 from .utils import prepare_multifunctional_for_writing
+
+
+def multifunctional_dispatcher_method(
+    db: "MultifunctionalDatabase", document: ActivityDataset
+):
+    return multifunctional_node_dispatcher(document)
 
 
 class MultifunctionalDatabase(SQLiteBackend):
@@ -44,6 +52,7 @@ class MultifunctionalDatabase(SQLiteBackend):
     """
 
     backend = "multifunctional"
+    node_class = multifunctional_dispatcher_method
 
     # def datapackage(self):
     #     """Pick the right datapackage depending on settings"""

@@ -7,7 +7,11 @@ from bw2data.errors import UnknownObject
 
 
 def prepare_multifunctional_for_writing(data: dict) -> dict:
-    """Add `input` values to each functional exchange if not already present."""
+    """Add `input` values to each functional exchange if not already present.
+
+    Needed because multifunctional processes don't normally link to themselves, but rather to
+    specific products; however, due to limitations in our data schema we *must* have an `input`
+    value even if it doesn't make sense."""
     for key, ds in data.items():
         for exc in ds.get("exchanges", []):
             if exc.get("functional") and "input" not in exc:
@@ -23,7 +27,7 @@ def update_datasets_from_allocation_results(data: List[dict]) -> None:
         exchanges = ds.pop("exchanges")
         try:
             node = get_node(database=ds["database"], code=ds["code"])
-            node._data.update(**data)
+            node._data.update(**ds)
         except UnknownObject:
             node = ReadOnlyProcessWithReferenceProduct(**ds)
 
@@ -37,6 +41,6 @@ def update_datasets_from_allocation_results(data: List[dict]) -> None:
 
         for exc_data in exchanges:
             exc = Exchange()
-            exc.output = node
             exc.update(**exc_data)
+            exc.output = node
             exc.save()

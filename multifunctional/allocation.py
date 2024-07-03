@@ -41,7 +41,7 @@ def generic_allocation(act: MaybeMultifunctionalProcess, func: Callable) -> List
         )
 
         try:
-            new_code = act["allocated_product_code"]
+            new_code = exc["allocated_product_code"]
         except KeyError:
             new_code = uuid4().hex
             exc["allocated_product_code"] = new_code
