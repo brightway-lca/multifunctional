@@ -1,6 +1,5 @@
 __all__ = (
     "__version__",
-    "convert_multifunctional_activity",
     "economic_allocation",
     "equal_allocation",
     "handler_mapping",
@@ -8,7 +7,6 @@ __all__ = (
 
 from .version import version as __version__
 
-from .utils import convert_multifunctional_activity
 from .handlers import economic_allocation, equal_allocation
 
 
