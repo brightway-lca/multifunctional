@@ -1,135 +1,150 @@
-# # -*- coding: utf-8 -*-
-# from . import sqlite3_lci_db
-from bw2data import mapping, geomapping, config
-# from ...errors import UntypedExchange, InvalidExchange, UnknownObject, WrongDatabase
-# from ...project import writable_project
-# from ...search import IndexManager, Searcher
-# from ...utils import as_uncertainty_dict
-# from ..base import LCIBackend
-# from ..utils import check_exchange
-# from .proxies import Activity
-from bw2data.backends.peewee.utils import (
-    dict_as_activitydataset,
-    dict_as_exchangedataset,
-    retupleize_geo_strings,
+from datetime import datetime as dt
+
+from bw2data import databases
+from bw2data.backends import SQLiteBackend
+from bw_processing import (
+    Datapackage,
+    clean_datapackage_name,
+    create_datapackage,
+    load_datapackage,
+    safe_filename,
 )
-from bw2data.backends.peewee.schema import ActivityDataset, ExchangeDataset
-from bw_processing import clean_datapackage_name, create_datapackage
-import datetime
-import itertools
-from bw2data.backends.peewee.database import SQLiteBackend
+from fs.zipfs import ZipFS
+
+from .calculator import AggregationCalculator
+from .errors import IncompatibleDatabase, ObsoleteAggregatedDatapackage
+from .estimator import CalculationDifferenceEstimator, Speedup
+from .override import AggregationContext, aggregation_override
+from .utils import check_processes_in_data, check_processes_in_database
 
 
 class MultifunctionalDatabase(SQLiteBackend):
-    def process(self):
-        """Create structured arrays for the technosphere and biosphere matrices.
+    """A class which maintains two processed datapackages, and can use the aggregated datapackage
+    for quicker calculations.
 
-        Uses ``bw_processing`` for array creation and metadata serialization.
+    An aggregated database only stores the *cumulative biosphere flows* of each unit process
+    instead of its actual supply chain. Because it stores less information, it can't do graph
+    traversal, Monte Carlo, or show any information on the processes in the supply chain causing
+    impacts.
 
-        Also creates a ``geomapping`` array, linking activities to locations. Used for regionalized calculations.
+    Calculating aggregated emissions for every process in a database can be expensive. Therefore,
+    this library in only useful for large background databases which do not change frequently.
 
-        Use a raw SQLite3 cursor instead of Peewee for a ~2 times speed advantage.
+    You can get an estimate of the speed increase possible for a given database with
+    `AggregatedDatabase.estimate_speedup('<database name>')`.
 
-        """
+    To create a new aggregated database, use `bw2data.Database('<name>', backend='aggregated')`.
+    To convert an existing database, use `AggregatedDatabase.convert_existing()`.
+
+    You can still do normal calculations with an aggregated database. To set the default
+    calculation method to use the aggregated values, call `db.use_aggregated()` (where `db` is an
+    instance of `AggregatedDatabase`). To set the default to use unit processes, call
+    `db.use_aggregated(False)`.
+
+    Stores configuration and log data in the `Database` metadata dictionary in the following keys:
+
+    * `aggregation_calculation_time`: float. Time to last calculate aggregation in seconds.
+    * `aggregation_calculation_timestamp`: TBD
+    * `aggregation_use_in_calculation`: bool. Use the aggregated datapackage in calculations.
+
+    """
+    def datapackage(self):
+        """Pick the right datapackage depending on settings"""
+        if (aggregation_override.global_override is True) or (
+            aggregation_override.local_overrides.get(self.name, None) is True
+        ):
+            fp = self.filepath_aggregated()
+        elif (aggregation_override.global_override is False) or (
+            aggregation_override.local_overrides.get(self.name, None) is False
+        ):
+            fp = self.filepath_processed()
+        else:
+            fp = (
+                self.filepath_aggregated()
+                if self.metadata.get("aggregation_use_in_calculation")
+                else self.filepath_processed()
+            )
+        with ZipFS(fp) as zip_fs:
+            return load_datapackage(zip_fs)
+
+    def filepath_aggregated(self):
+        if not self.aggregation_datapackage_valid():
+            MESSAGE = f"""Aggregated datapackage for database '{self.name}' is out of date.
+    It needs to be recalculated with:
+
+        import bw_aggregated as bwa
+        bwa.AggregatedDatabase("{self.name}").process_aggregated()
+
+    If you have mutual references in multiple aggregated databases, you can refresh all outdated
+    with:
+
+        bwa.AggregatedDatabase.refresh_all()
+
+    """
+            raise ObsoleteAggregatedDatapackage(MESSAGE)
+
+        return self.dirpath_processed() / self.filename_aggregated()
+
+    def filename_aggregated(self):
+        return clean_datapackage_name(self.filename + "aggregated.zip")
+
+    def refresh(self) -> None:
+        """Easy to remember shortcut for humans."""
+        self.process_aggregated()
+
+    @staticmethod
+    def refresh_all() -> None:
+        outdated_databases = [
+            name
+            for name, meta in databases.items()
+            if meta["backend"] == "aggregated"
+            and not AggregatedDatabase(name).aggregation_datapackage_valid()
+        ]
+        with AggregationContext(False):
+            for db_name in outdated_databases:
+                AggregatedDatabase(db_name).refresh()
+
+    def write(self, data, process=True, searchable=True) -> None:
+        if not check_processes_in_data(data.values()):
+            raise IncompatibleDatabase(
+                "This data only has biosphere flows, and can't be aggregated."
+            )
+
+        super().write(data=data, process=process, searchable=searchable)
+
+        if process:
+            self.process_aggregated()
+
+    def process_aggregated(self, in_memory: bool = False) -> Datapackage:
+        """Create structured arrays for the aggregated biosphere emissions, and for unitary production."""
         # Try to avoid race conditions - but no guarantee
-        self.metadata["processed"] = datetime.datetime.now().isoformat()
+        self.metadata["aggregation_calculation_timestamp"] = dt.now().isoformat()
 
-        # Get number of exchanges and processes to set
-        # initial Numpy array size (still have to include)
-        # implicit production exchanges
-        dependents = set()
-
-        # Create geomapping array, from dataset interger ids to locations
-        inv_mapping_qs = ActivityDataset.select(
-            ActivityDataset.location, ActivityDataset.code
-        ).where(
-            ActivityDataset.database == self.name, ActivityDataset.type == "process"
-        )
+        calculator = AggregationCalculator(self.name)
+        calculator.calculate()
 
         dp = create_datapackage(
-            dirpath=self.dirpath_processed(),
-            name=self.filename_processed(),
-            compress=True,
-            overwrite=True,
-            duplicates="sum",
-        )
-        dp.add_persistent_vector_from_iterator(
-            nrows=inv_mapping_qs.count(),
-            dict_iterator=(
-                {
-                    "row": mapping[(self.name, row["code"])],
-                    "col": geomapping[
-                        retupleize_geo_strings(row["location"])
-                        or config.global_location
-                    ],
-                    "amount": 1,
-                }
-                for row in inv_mapping_qs.dicts()
+            fs=(
+                None
+                if in_memory
+                else ZipFS(str(self.filepath_aggregated()), write=True)
             ),
-            matrix_label="inv_geomapping_matrix",
-            name=clean_datapackage_name(self.name + " inventory geomapping matrix"),
+            name=clean_datapackage_name(self.name),
+            sum_intra_duplicates=True,
+            sum_inter_duplicates=False,
         )
+        self._add_inventory_geomapping_to_datapackage(dp=dp)
 
-        BIOSPHERE_SQL = """SELECT data, input_database, input_code, output_database, output_code
-                FROM exchangedataset
-                WHERE output_database = ?
-                AND type = 'biosphere'
-        """
         dp.add_persistent_vector_from_iterator(
-            dict_iterator=self.exchange_data_iterator(BIOSPHERE_SQL, dependents),
-            matrix_label="biosphere_matrix",
+            matrix="biosphere_matrix",
             name=clean_datapackage_name(self.name + " biosphere matrix"),
+            dict_iterator=calculator.biosphere_iterator,
         )
-
-        # Figure out when the production exchanges are implicit
-        implicit_production = (
-            {"row": mapping[(self.name, x[0])], "amount": 1}
-            # Get all codes
-            for x in ActivityDataset.select(ActivityDataset.code)
-            .where(
-                # Get correct database name
-                ActivityDataset.database == self.name,
-                # Only consider `process` type activities
-                ActivityDataset.type << ("process", None),
-                # But exclude activities that already have production exchanges
-                ~(
-                    ActivityDataset.code
-                    << ExchangeDataset.select(
-                        # Get codes to exclude
-                        ExchangeDataset.output_code
-                    ).where(
-                        ExchangeDataset.output_database == self.name,
-                        ExchangeDataset.type << ("production", "generic production"),
-                    )
-                ),
-            )
-            .tuples()
-        )
-
-        TECHNOSPHERE_POSITIVE_SQL = """SELECT data, input_database, input_code, output_database, output_code
-                FROM exchangedataset
-                WHERE output_database = ?
-                AND type IN ('production', 'substitution', 'generic production')
-        """
-        TECHNOSPHERE_NEGATIVE_SQL = """SELECT data, input_database, input_code, output_database, output_code
-                FROM exchangedataset
-                WHERE output_database = ?
-                AND type IN ('technosphere', 'generic consumption')
-        """
-
         dp.add_persistent_vector_from_iterator(
-            dict_iterator=itertools.chain(
-                self.exchange_data_iterator(
-                    TECHNOSPHERE_NEGATIVE_SQL, dependents, flip=True
-                ),
-                self.exchange_data_iterator(TECHNOSPHERE_POSITIVE_SQL, dependents),
-                implicit_production,
-            ),
-            matrix_label="technosphere_matrix",
+            matrix="technosphere_matrix",
             name=clean_datapackage_name(self.name + " technosphere matrix"),
+            dict_iterator=calculator.technosphere_iterator,
         )
-        dp.finalize_serialization()
-
-        self.metadata["depends"] = sorted(dependents)
-        self.metadata["dirty"] = False
-        self._metadata.flush()
+        if not in_memory:
+            dp.finalize_serialization()
+        return dp

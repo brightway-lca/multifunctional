@@ -5,7 +5,7 @@ __all__ = (
     "handler_mapping",
 )
 
-from .version import version as __version__
+__version__ = "0.1.DEV"
 
 from .handlers import economic_allocation, equal_allocation
 
