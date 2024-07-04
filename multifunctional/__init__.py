@@ -8,7 +8,7 @@ __all__ = (
     "property_allocation",
 )
 
-__version__ = "0.1.DEV"
+__version__ = "0.1"
 
 from bw2data import labels
 from bw2data.subclass_mapping import (
