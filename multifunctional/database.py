@@ -10,7 +10,7 @@ from bw_processing import (
 )
 
 from .node_dispatch import multifunctional_node_dispatcher
-from .utils import prepare_multifunctional_for_writing
+from .utils import add_exchange_input_if_missing
 
 
 def multifunctional_dispatcher_method(
@@ -55,7 +55,7 @@ class MultifunctionalDatabase(SQLiteBackend):
     node_class = multifunctional_dispatcher_method
 
     def write(self, data: dict, *args, **kwargs) -> None:
-        data = prepare_multifunctional_for_writing(data)
+        data = add_exchange_input_if_missing(data)
         super().write(data, *args, **kwargs)
 
     def process(self, csv: bool = False) -> None:

@@ -6,7 +6,7 @@ from bw2data.backends.schema import ExchangeDataset
 from bw2data.errors import UnknownObject
 
 
-def prepare_multifunctional_for_writing(data: dict) -> dict:
+def add_exchange_input_if_missing(data: dict) -> dict:
     """Add `input` values to each functional exchange if not already present.
 
     Needed because multifunctional processes don't normally link to themselves, but rather to
@@ -15,7 +15,10 @@ def prepare_multifunctional_for_writing(data: dict) -> dict:
     for key, ds in data.items():
         for exc in ds.get("exchanges", []):
             if exc.get("functional") and "input" not in exc:
-                exc["input"] = key
+                if "code" in exc:
+                    exc["input"] = (ds["database"], exc['code'])
+                else:
+                    exc["input"] = key
     return data
 
 
