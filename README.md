@@ -55,6 +55,10 @@ database_obj.metadata.flush()
 
 You don't need to use library for substitution, that already works natively in Brightway. Just produce a product which another process also produces (i.e. has the same database name and code), and the production amount of the other process will be reduced as needed to meet the functional unit demand.
 
+### Classifying functional edges
+
+There is currently no built-in functionality to determine if an edge is functional based on its attributes - instead we rely on the label `functional` being manually specified. You can write a function to iterate over datasets and label the functional edges in whatever fashion you choose.
+
 ### Built-in allocation functions
 
 `multifunctional` includes the following built-in property-based allocation functions:
