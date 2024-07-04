@@ -49,7 +49,8 @@ database_obj.metadata['default_allocation'] = 'price'
 database_obj.metadata.flush()
 ```
 
-3. LCA calculations can be done as normal. See `dev/basic_example.ipynb` for a simple example.
+3. Process the database to create the allocated monofunctional processes: `database_obj.process()`.
+4. LCA calculations can then be done as normal. See `dev/basic_example.ipynb` for a simple example.
 
 ### Substitution
 

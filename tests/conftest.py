@@ -11,5 +11,6 @@ def basic():
     from multifunctional import MultifunctionalDatabase
 
     db = MultifunctionalDatabase("basic")
-    db.write(BASIC_DATA)
+    db.write(BASIC_DATA, process=False)
+    db.metadata["dirty"] = True
     return db

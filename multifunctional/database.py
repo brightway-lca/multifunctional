@@ -57,3 +57,9 @@ class MultifunctionalDatabase(SQLiteBackend):
     def write(self, data: dict, *args, **kwargs) -> None:
         data = prepare_multifunctional_for_writing(data)
         super().write(data, *args, **kwargs)
+
+    def process(self, csv: bool = False) -> None:
+        for node in self:
+            if node.has_multiple_functional_edges:
+                node.allocate()
+        super().process(csv=csv)

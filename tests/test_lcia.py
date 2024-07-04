@@ -6,12 +6,12 @@ import bw2data as bd
 
 def test_lcia_scores(basic):
     basic.metadata["default_allocation"] = "price"
-    bd.get_node(code="1").allocate()
     flow = bd.get_node(code="a")
     m = bd.Method(("foo",))
     m.register()
     m.write([(flow.id, 5)])
 
+    basic.process()
     filters = {
         "name": "process - 1",
         "reference product": "first product - 1",

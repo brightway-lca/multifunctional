@@ -92,7 +92,9 @@ def get_allocation_factor_from_property(
 def property_allocation(property_label: str) -> Callable:
     return partial(
         generic_allocation,
-        func=partial(get_allocation_factor_from_property, property_label=property_label),
+        func=partial(
+            get_allocation_factor_from_property, property_label=property_label
+        ),
     )
 
 
