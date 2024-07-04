@@ -37,13 +37,12 @@ mamba install -c conda-forge -c cmutel multifunctional
 
 ## Usage
 
-Multifunctional activities can lead to linear algebra problems which don't have exactly one solution. Therefore, we commonly need to apply a handling function to either partition such activities, or otherwise manipulate their data such that they allow for the creation of a non-singular, square technosphere matrix.
+Multifunctional activities can lead to linear algebra problems which don't have exactly one solution. Therefore, we commonly need to apply a handling function to either partition such activities, or otherwise manipulate their data such that they allow for the creation of a square and non-singular technosphere matrix.
 
 This library is designed around the following workflow:
 
-1. A multifunctional process is created and saved to the database by a user. A multifunctional process is any process with multiple functional flows, either outputs (e.g. products) and/or input (e.g. wastes).
-1. The user provides a handling function of this process, such as substitution, allocation, etc.
-1. When this database is processed, this library will apply the handling function, and create a square matrix for the database.
+1. Multifunctional process(es) are created and saved in a `MultifunctionalDatabase`. A multifunctional process is any process with multiple functional edges, either outputs (e.g. products) and/or input (e.g. wastes). Each functional edge must be labelled `functional=True`.
+1. The user specifies a strategy for handling the `MultifunctionalDatabase`, such as economic allocation. Individual multifunctional processes can also have their own specific strategies. Strategies are strings in the ``
 
 More functionality is planned; see [limitations](#limitations).
 
