@@ -32,7 +32,7 @@ dependencies = [
     "bw2data>=4.0.dev44",
     "bw2io>=0.9.dev28",
     "bw_processing>=0.9.5",
-    "numpy<2",
+    "numpy<3",
     "loguru",
 ]
 
