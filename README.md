@@ -42,31 +42,77 @@ Multifunctional activities can lead to linear algebra problems which don't have 
 This library is designed around the following workflow:
 
 1. Multifunctional process(es) are created and saved in a `MultifunctionalDatabase`. A multifunctional process is any process with multiple functional edges, either outputs (e.g. products) and/or input (e.g. wastes). Each functional edge must be labelled `functional=True`.
-1. The user specifies a strategy for handling the `MultifunctionalDatabase`, such as economic allocation. Individual multifunctional processes can also have their own specific strategies. Strategies are strings in the ``
+2. The user specifies an allocation strategy for the database:
 
-More functionality is planned; see [limitations](#limitations).
+```python
+database_obj.metadata['default_allocation'] = 'price'
+database_obj.metadata.flush()
+```
 
-## How does it work?
+3. LCA calculations can be done as normal. See `dev/basic_example.ipynb` for a simple example.
 
-1. LCA distinguishes processes and products. brightway introduces a new classification at the product level where products are either defined as goods or wastes.
-   This classification is consistently maintained within a project, meaning that the same product cannot be classified as a good in one process and as a waste in another process.
-   Or in other words, all intermediate flows of the same product carry the same classification (good OR waste).
-1. brightway determines functional flows based on the good/waste classification of the flows of a process.
-   Functional flows are defined as process outputs that are goods and process inputs that are wastes.
+### Substitution
 
-1. Adding a functional flow exchange will automatically create a new `product` node in the supply chain graph (if necessary).
-1. Multi-functional processes are handled by handler functions. Handler functions are mapped in `multifunctional.handler_mapping`. This library provides a default set of handling functions (see below); users may also add custom handlers.
-1. When the database is processed, the handler functions are executed, and if necessary, virtual activities are created. The processed array will create a square matrix.
+You don't need to use library for substitution, that already works natively in Brightway. Just produce a product which another process also produces (i.e. has the same database name and code), and the production amount of the other process will be reduced as needed to meet the functional unit demand.
 
-## What does the user need to do?
+### Built-in allocation functions
 
-1. Users specify products to be either goods or wastes when creating them the first time (this can be changed later, but may lead to changes in multiple processes): ``product['waste'] = False``.
-1. Users need to specify which allocation method is to be used to resolve multi-functionality (e.g. economic allocation or substitution) and users need to provide the required data (e.g. prices or substitute product) so that multi-functionality can be resolved by one of the handlers.
-Users give multifunctional activities a handler function label: ``activity_instance['handler'] = 'some_handler_function_label'``. Handler function labels are strings.
+`multifunctional` includes the following built-in property-based allocation functions:
 
-## Limitations
+* `price`: Does economic allocation based on the property "price" in each functional edge.
+* `mass`: Does economic allocation based on the property "mass" in each functional edge.
+* `manual`: Does economic allocation based on the property "manual" in each functional edge.
 
-* This library current only works with the default SQlite backend
+Property-based allocation assumes that each functional edge has a `properties` dictionary, and this dictionary has the relevant key with a corresponding numeric value. For example, for `price` allocation, each functional edge needs to have `'properties' = {'price': some_number}`.
+
+The allocation strategy `equal` is also included, though mostly for testing purposes. This divides impacts equally across each functional edge.
+
+### Custom property-based allocation functions
+
+To create new property-based allocation functions, add an entry to `allocation_strategies` using the function `property_allocation`:
+
+```python
+import multifunctional as mf
+mf.allocation_strategies['foo'] = property_allocation('bar')
+```
+
+Additions to `allocation_strategies` are not persisted, so need to be repeated in each Python interpreter.
+
+### Custom single-factor allocation functions
+
+To create custom allocation functions which apply a single allocation factor to all nonfunctional inputs and outputs, pass a function to `multifunctional.allocation.generic_allocation`. This function needs to accept the following input arguments:
+
+* edge_data (dict): Data on functional edge
+* node: An instance of `multifunctional.MaybeMultifunctionalProcess`
+
+The custom function should return a number.
+
+The custom function needs to be curried and added to `allocation_strategies`. You can follow this example:
+
+```python
+import multifunctional as mf
+from functools import partial
+
+def allocation_factor(edge_data: dict, node: mf.MaybeMultifunctionalProcess) -> float:
+   """Nonsensical allocation factor generation"""
+   if edge_data.get("unit") == "kg":
+      return 1.2
+   elif "silly" in node["name"]:
+      return 4.2
+   else:
+      return 7
+
+mf.allocation_strategies['silly'] = partial(mf.generic_allocation, func=allocation_factor)
+```
+
+### Other custom allocation functions
+
+To have complete control over allocation, add your own function to `allocation_strategies`. This function should take an input of `multifunctional.MultifunctionalProcess`, and return a list of dictionaries. These dictionaries can follow the [normal `ProcessWithReferenceProduct` data schema](https://github.com/brightway-lca/bw_interface_schemas/blob/5fb1d40587aec2a4bb2248505550fc883a91c355/bw_interface_schemas/lci.py#L83), but the new node datasets need to also include the following:
+
+* `multifunctional_parent_id`: Integer database id of the source multifunctional process
+* `type`: Should always be "readonly_process"
+
+Furthermore, the code of the allocated processes (`allocated_product_code`) must be written to each functional edge (and that edge saved so this data is persisted). See the code in `multifunctional.allocation.generic_allocation` for an example.
 
 ## Contributing
 

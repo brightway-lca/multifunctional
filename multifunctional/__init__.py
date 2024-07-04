@@ -5,6 +5,7 @@ __all__ = (
     "MultifunctionalDatabase",
     "MultifunctionalProcess",
     "ReadOnlyProcessWithReferenceProduct",
+    "property_allocation",
 )
 
 __version__ = "0.1.DEV"
@@ -15,7 +16,7 @@ from bw2data.subclass_mapping import (
     NODE_PROCESS_CLASS_MAPPING,
 )
 
-from .allocation import allocation_strategies
+from .allocation import allocation_strategies, property_allocation
 from .database import MultifunctionalDatabase
 from .node_classes import (
     MaybeMultifunctionalProcess,
