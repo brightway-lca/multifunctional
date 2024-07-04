@@ -46,7 +46,6 @@ This library is designed around the following workflow:
 
 ```python
 database_obj.metadata['default_allocation'] = 'price'
-database_obj.metadata.flush()
 ```
 
 3. Process the database to create the allocated monofunctional processes: `database_obj.process()`.
