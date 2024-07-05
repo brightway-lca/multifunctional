@@ -122,7 +122,7 @@ mf.allocation_strategies['silly'] = partial(
 
 To have complete control over allocation, add your own function to `allocation_strategies`. This function should take an input of `multifunctional.MultifunctionalProcess`, and return a list of dictionaries. These dictionaries can follow the [normal `ProcessWithReferenceProduct` data schema](https://github.com/brightway-lca/bw_interface_schemas/blob/5fb1d40587aec2a4bb2248505550fc883a91c355/bw_interface_schemas/lci.py#L83), but the new node datasets need to also include the following:
 
-* `multifunctional_parent_id`: Integer database id of the source multifunctional process
+* `mf_parent_key`: Integer database id of the source multifunctional process
 * `type`: Should always be "readonly_process"
 
 Furthermore, the code of the allocated processes (`allocated_product_code`) must be written to each functional edge (and that edge saved so this data is persisted). See the code in `multifunctional.allocation.generic_allocation` for an example.

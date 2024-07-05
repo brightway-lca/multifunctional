@@ -44,9 +44,7 @@ class MultifunctionalProcess(BaseMultifunctionalNode):
         base = super().__str__()
         return f"Multifunctional: {base}"
 
-    def allocate(
-        self, strategy_label: Optional[str] = None
-    ) -> Union[None, NoAllocationNeeded]:
+    def allocate(self, strategy_label: Optional[str] = None) -> Union[None, NoAllocationNeeded]:
         from . import allocation_strategies
 
         if strategy_label is None:
@@ -60,9 +58,7 @@ class MultifunctionalProcess(BaseMultifunctionalNode):
                 "Can't find `default_allocation` in input arguments, or process/database metadata."
             )
         elif strategy_label not in allocation_strategies:
-            raise KeyError(
-                f"Given strategy label {strategy_label} not in `allocation_strategies`"
-            )
+            raise KeyError(f"Given strategy label {strategy_label} not in `allocation_strategies`")
 
         if self.get("skip_allocation"):
             return NoAllocationNeeded
@@ -103,12 +99,15 @@ class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):
     @property
     def parent(self):
         """Return the `MultifunctionalProcess` which generated this node object"""
-        return get_node(id=self["multifunctional_parent_id"])
+        return get_node(
+            database=self["mf_parent_key"][0],
+            code=self["mf_parent_key"][1],
+        )
 
     def save(self):
         self._data["type"] = "readonly_process"
-        if not self.get("multifunctional_parent_id"):
-            raise ValueError("Must specify `multifunctional_parent_id`")
+        if not self.get("mf_parent_key"):
+            raise ValueError("Must specify `mf_parent_key`")
         super().save()
 
     def copy(self, *args, **kwargs):

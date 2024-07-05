@@ -13,9 +13,7 @@ from .node_dispatch import multifunctional_node_dispatcher
 from .utils import add_exchange_input_if_missing
 
 
-def multifunctional_dispatcher_method(
-    db: "MultifunctionalDatabase", document: ActivityDataset
-):
+def multifunctional_dispatcher_method(db: "MultifunctionalDatabase", document: ActivityDataset):
     return multifunctional_node_dispatcher(document)
 
 
@@ -58,8 +56,9 @@ class MultifunctionalDatabase(SQLiteBackend):
         data = add_exchange_input_if_missing(data)
         super().write(data, *args, **kwargs)
 
-    def process(self, csv: bool = False) -> None:
-        for node in self:
-            if node.has_multiple_functional_edges:
-                node.allocate()
+    def process(self, csv: bool = False, allocate: bool = True) -> None:
+        if allocate:
+            for node in self:
+                if node.has_multiple_functional_edges:
+                    node.allocate()
         super().process(csv=csv)

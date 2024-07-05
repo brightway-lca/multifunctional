@@ -1,11 +1,29 @@
 from pprint import pformat
-from typing import List
+from typing import Dict, List
 
 from bw2data import get_node
 from bw2data.backends import Exchange
 from bw2data.backends.schema import ExchangeDataset
 from bw2data.errors import UnknownObject
 from loguru import logger
+
+
+def allocation_before_writing(data: Dict[tuple, dict], strategy_label: str) -> Dict[tuple, dict]:
+    """Utility to perform allocation on datasets and expand `data` with allocated processes."""
+    from . import allocation_strategies
+
+    datasets = []
+    func = allocation_strategies[strategy_label]
+    for key, ds in data.items():
+        ds["database"] = key[0]
+        ds["code"] = key[1]
+
+        if sum(1 for exc in ds.get("exchanges", []) if exc.get("functional")) > 1:
+            datasets.extend(func(ds))
+        else:
+            datasets.append(ds)
+
+    return {(ds.pop("database"), ds.pop("code")): ds for ds in datasets}
 
 
 def add_exchange_input_if_missing(data: dict) -> dict:
@@ -26,14 +44,10 @@ def add_exchange_input_if_missing(data: dict) -> dict:
                         i=exc["input"][1],
                         e=pformat(exc),
                     )
-                exc["code"] = exc["input"][1]
-            else:
-                if "code" in exc:
-                    exc["input"] = (exc.get("database") or key[0], exc["code"])
-                else:
-                    exc["input"] = key
                     exc["code"] = exc["input"][1]
-                    exc["mf_artificial_code"] = True
+            else:
+                exc["input"] = key
+                exc["mf_artificial_code"] = True
     return data
 
 

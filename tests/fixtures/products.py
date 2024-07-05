@@ -21,7 +21,7 @@ DATA = {
             {
                 "functional": True,
                 "type": "production",
-                "code": "product",
+                "input": ("products", "product"),
                 "amount": 4,
                 "properties": {
                     "price": 7,

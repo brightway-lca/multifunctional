@@ -9,9 +9,7 @@ from multifunctional.node_classes import (
 
 
 def check_products_allocation_results(factor_1, factor_2, database):
-    nodes = sorted(
-        database, key=lambda x: (x["name"], x.get("reference product", ""), x["type"])
-    )
+    nodes = sorted(database, key=lambda x: (x["name"], x.get("reference product", ""), x["type"]))
 
     assert isinstance(nodes[0], MaybeMultifunctionalProcess)
     assert nodes[0]["name"] == "first product"
@@ -25,7 +23,7 @@ def check_products_allocation_results(factor_1, factor_2, database):
 
     assert isinstance(nodes[2], MultifunctionalProcess)
     assert "reference product" not in nodes[2]
-    assert "multifunctional_parent_id" not in nodes[2]
+    assert "mf_parent_key" not in nodes[2]
     expected = {
         "name": "process - 1",
         "type": "multifunctional",
@@ -38,7 +36,7 @@ def check_products_allocation_results(factor_1, factor_2, database):
         "name": "process - 1",
         "reference product": "first product",
         "unit": "kg",
-        "multifunctional_parent_id": nodes[2].id,
+        "mf_parent_key": nodes[2].key,
         "type": "readonly_process",
     }
     for key, value in expected.items():
@@ -74,7 +72,7 @@ def check_products_allocation_results(factor_1, factor_2, database):
         "name": "process - 1",
         "reference product": "second product - 1",
         "unit": "megajoule",
-        "multifunctional_parent_id": nodes[2].id,
+        "mf_parent_key": nodes[2].key,
         "type": "readonly_process",
     }
     for key, value in expected.items():
@@ -107,9 +105,7 @@ def check_products_allocation_results(factor_1, factor_2, database):
 
 
 def test_without_allocation(products):
-    nodes = sorted(
-        products, key=lambda x: (x["name"], x.get("reference product", ""), x["type"])
-    )
+    nodes = sorted(products, key=lambda x: (x["name"], x.get("reference product", ""), x["type"]))
 
     assert len(nodes) == 3
 
@@ -124,7 +120,7 @@ def test_without_allocation(products):
 
     assert isinstance(nodes[2], MultifunctionalProcess)
     assert "reference product" not in nodes[2]
-    assert "multifunctional_parent_id" not in nodes[2]
+    assert "mf_parent_key" not in nodes[2]
     expected = {
         "name": "process - 1",
         "type": "multifunctional",
@@ -166,9 +162,7 @@ def test_allocation_uses_existing(products):
 def test_allocation_already_allocated(products):
     products.metadata["default_allocation"] = "price"
     bd.get_node(code="1").allocate()
-    node = sorted(products, key=lambda x: (x["name"], x.get("reference product", "")))[
-        3
-    ]
+    node = sorted(products, key=lambda x: (x["name"], x.get("reference product", "")))[3]
 
     assert generic_allocation(node, None) == []
 

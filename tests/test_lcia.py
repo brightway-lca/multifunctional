@@ -6,19 +6,18 @@ import bw2data as bd
 
 def test_lcia_scores(basic):
     basic.metadata["default_allocation"] = "price"
+    basic.process()
+
     flow = bd.get_node(code="a")
     m = bd.Method(("foo",))
     m.register()
     m.write([(flow.id, 5)])
 
-    basic.process()
     filters = {
         "name": "process - 1",
         "reference product": "first product - 1",
     }
-    fu, objs, _ = bd.prepare_lca_inputs(
-        demand={bd.get_node(**filters): 1}, method=("foo",)
-    )
+    fu, objs, _ = bd.prepare_lca_inputs(demand={bd.get_node(**filters): 1}, method=("foo",))
     lca = bc.LCA(fu, data_objs=objs)
     lca.lci()
     lca.lcia()
@@ -28,9 +27,7 @@ def test_lcia_scores(basic):
         "name": "process - 1",
         "reference product": "second product - 1",
     }
-    fu, objs, _ = bd.prepare_lca_inputs(
-        demand={bd.get_node(**filters): 1}, method=("foo",)
-    )
+    fu, objs, _ = bd.prepare_lca_inputs(demand={bd.get_node(**filters): 1}, method=("foo",))
     lca = bc.LCA(fu, data_objs=objs)
     lca.lci()
     lca.lcia()

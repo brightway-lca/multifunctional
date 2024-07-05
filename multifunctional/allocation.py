@@ -1,21 +1,17 @@
 from copy import deepcopy
 from functools import partial
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 from uuid import uuid4
 
 from bw2data import get_node
+from bw2data.backends.proxies import Activity
 from bw2data.errors import UnknownObject
 from bw2io.utils import rescale_exchange
 from loguru import logger
 
-from .node_classes import (
-    MaybeMultifunctionalProcess,
-    ReadOnlyProcessWithReferenceProduct,
-)
-
 
 def generic_allocation(
-    act: MaybeMultifunctionalProcess,
+    act: Union[dict, Activity],
     func: Callable,
     strategy_label: Optional[str] = None,
 ) -> List[dict]:
@@ -25,18 +21,27 @@ def generic_allocation(
     amounts times function(edge_data, act).
 
     Skips functional edges with zero allocation values."""
-    if isinstance(act, ReadOnlyProcessWithReferenceProduct):
+    if isinstance(act, Activity):
+        act_data = act._data
+        act_data["exchanges"] = [exc._data for exc in act.exchanges()]
+        act = act_data
+
+    if act.get("type") == "readonly_process":
         return []
-    elif not act.has_multiple_functional_edges:
+    elif sum(1 for exc in act.get("exchanges", []) if exc.get("functional")) < 2:
         return []
 
     total = 0
-    for exc in act.functional_edges():
-        total += func(exc._data, act)
+    for exc in filter(lambda x: x.get("functional"), act.get("exchanges", [])):
+        total += func(exc, act)
 
-    new_processes = []
-    for exc in act.functional_edges():
-        factor = func(exc._data, act) / total
+    if not total:
+        raise ZeroDivisionError("Sum of allocation factors is zero")
+
+    processes = [act]
+
+    for exc in filter(lambda x: x.get("functional"), act.get("exchanges", [])):
+        factor = func(exc, act) / total
         if not factor:
             continue
 
@@ -47,112 +52,83 @@ def generic_allocation(
             a=repr(act),
         )
 
-        # Case 1: Edge points to nothing
-        # Case 2: Edge points to an allocated readonly process
-        # Case 3: Edge points to an existing product node
+        # Added by `add_exchange_input_if_missing`, but shouldn't be used
+        if exc.get("mf_artificial_code"):
+            del exc["input"]
+            del exc["mf_artificial_code"]
 
-        change = False
-
-        # Remove artificial code added by `add_exchange_input_if_missing`
-        if exc.get("mf_artificial_code") and "code" in exc:
-            del exc["code"]
-
-        try:
-            if "desired_code" in exc:
-                process_code = exc["desired_code"]
-            else:
-                process_code = exc["mf_allocated_process_code"]
-        except KeyError:
+        # We need to allow for both initial allocation, and also re-allocation
+        # We also need to generate codes for processes linked to products with existing codes
+        if exc.get("mf_allocated"):
+            # Don't need to think, made choice on initial allocation
+            process_code = exc["mf_allocated_process_code"]
+        elif exc.get("input"):
+            # Initial allocation with link to a known node but separate process
+            exc["mf_allocated"] = True
             process_code = exc["mf_allocated_process_code"] = uuid4().hex
-            change = True
-        try:
-            exc["code"]
-        except KeyError:
-            exc["code"] = process_code
-            change = True
-
-        if change:
-            exc.save()
+        else:
+            # Create new process+product node with same generated code
+            # either desired or random
+            exc["mf_allocated"] = True
+            process_code = exc["mf_allocated_process_code"] = exc.get("desired_code") or uuid4().hex
+            exc["input"] = (act["database"], process_code)
             logger.debug(
-                "Creating new product code {c} for functional edge {e} on activity {a}",
+                "Creating new product code {c} for functional edge:\n{e}\nOn activity\n{a}",
                 c=process_code,
                 e=repr(exc),
                 a=repr(act),
             )
 
         try:
-            assert not exc.get("mf_artificial_code")
             product = get_node(database=exc["input"][0], code=exc["input"][1])
-        except (KeyError, UnknownObject, AssertionError):
-            product = None
+        except UnknownObject:
+            # Try using attributes stored on the edge
+            # Might not work, but better than trying to give access to whole raw database
+            # currently being written
+            product = exc
 
-        allocated_process = deepcopy(act._data)
+        allocated_process = deepcopy(act)
         if "id" in allocated_process:
             del allocated_process["id"]
         if strategy_label:
             allocated_process["mf_strategy_label"] = strategy_label
         allocated_process["code"] = process_code
-        allocated_process["multifunctional_parent_id"] = act.id
+        allocated_process["mf_parent_key"] = (act["database"], act["code"])
         allocated_process["type"] = "readonly_process"
+        allocated_process["reference product"] = product.get("reference product") or product.get(
+            "name", "(unspecified)"
+        )
+        allocated_process["unit"] = product.get("unit", "(unspecified)")
 
-        if "name" in exc:
-            allocated_process["reference product"] = exc["name"]
-        elif product:
-            allocated_process["reference product"] = product.get(
-                "name", "(unnamed product)"
-            )
-        else:
-            allocated_process["reference product"] = "(unnamed)"
-
-        if "unit" in exc:
-            allocated_process["unit"] = exc["unit"]
-        elif product:
-            allocated_process["unit"] = product.get("unit")
-
-        new_functional_exchange = deepcopy(exc._data)
-
-        # Change input from artificial one added by `add_exchange_input_if_missing`
-        # to the actual code needed
-        if (
-            new_functional_exchange.get("mf_artificial_code")
-            and "input" in new_functional_exchange
-        ):
-            new_functional_exchange["input"] = (act["database"], process_code)
-
+        new_functional_exchange = deepcopy(exc)
         allocated_process["exchanges"] = [new_functional_exchange]
 
-        for other in act.nonfunctional_edges():
-            allocated_process["exchanges"].append(
-                rescale_exchange(deepcopy(other._data), factor)
-            )
+        for other in filter(lambda x: not x.get("functional"), act["exchanges"]):
+            allocated_process["exchanges"].append(rescale_exchange(deepcopy(other), factor))
 
-        new_processes.append(allocated_process)
+        processes.append(allocated_process)
 
-    return new_processes
+    return processes
 
 
-def get_allocation_factor_from_property(
-    edge_data: dict, node: MaybeMultifunctionalProcess, property_label: str
-) -> float:
+def get_allocation_factor_from_property(edge_data: dict, node: dict, property_label: str) -> float:
     if "properties" not in edge_data:
         raise KeyError(
-            f"Edge {edge_data} from process {node} (id {node.id}) doesn't have properties"
+            f"Edge {edge_data} from process {node.get('name')} (id {node.get('id')}) doesn't have properties"
         )
     try:
         return edge_data["amount"] * edge_data["properties"][property_label]
     except KeyError as err:
         raise KeyError(
-            f"Edge {edge_data} from process {node} (id {node.id}) missing property {property_label}"
+            f"Edge {edge_data} from process {node.get('name')} (id {node.get('id')}) missing property {property_label}"
         ) from err
 
 
 def property_allocation(property_label: str) -> Callable:
     return partial(
         generic_allocation,
-        func=partial(
-            get_allocation_factor_from_property, property_label=property_label
-        ),
-        strategy_label=f"property allocation by '{property_label}'"
+        func=partial(get_allocation_factor_from_property, property_label=property_label),
+        strategy_label=f"property allocation by '{property_label}'",
     )
 
 

@@ -67,7 +67,7 @@ def test_read_only_parent(basic):
     basic.metadata["default_allocation"] = "mass"
     parent = bd.get_node(code="1")
     parent.allocate()
-    node = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))[2]
+    node = bd.get_node(unit="kg", name="process - 1", type="readonly_process")
     assert node.parent == parent
 
 
@@ -76,7 +76,7 @@ def test_need_parent_id(basic):
     parent = bd.get_node(code="1")
     parent.allocate()
     node = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))[2]
-    node._data.pop("multifunctional_parent_id")
+    node._data.pop("mf_parent_key")
     with pytest.raises(ValueError) as info:
         node.save()
-    assert "multifunctional_parent_id" in info.value.args[0]
+    assert "mf_parent_key" in info.value.args[0]

@@ -26,19 +26,24 @@ def test_add_exchange_input_if_missing(caplog):
             "exchanges": [
                 {"functional": False},
                 {},
-                {"functional": True, "input": ("db", "other"), "code": "other"},
-                {"functional": True, "input": ("db", "foo"), "code": "foo"},
+                {"functional": True, "input": ("db", "other")},
                 {"functional": True, "input": ("db", "foo"), "code": "foo"},
                 {
                     "functional": True,
-                    "input": ("something", "foo"),
+                    "input": ("db", "code"),
+                    "mf_artificial_code": True,
+                    "code": "foo",
+                },
+                {
+                    "functional": True,
+                    "input": ("db", "code"),
+                    "mf_artificial_code": True,
                     "code": "foo",
                     "database": "something",
                 },
                 {
                     "functional": True,
                     "input": ("db", "code"),
-                    "code": "code",
                     "mf_artificial_code": True,
                 },
             ]
@@ -46,7 +51,12 @@ def test_add_exchange_input_if_missing(caplog):
         ("db", "more"): {
             "database": "me",
             "exchanges": [
-                {"functional": True, "code": "foo", "input": ("db", "foo")},
+                {
+                    "functional": True,
+                    "code": "foo",
+                    "input": ("db", "more"),
+                    "mf_artificial_code": True,
+                },
             ],
         },
     }

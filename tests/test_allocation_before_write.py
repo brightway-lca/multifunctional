@@ -1,22 +1,29 @@
 import bw2data as bd
+import pytest
+from bw2data.tests import bw2test
 
-from multifunctional.allocation import generic_allocation
-from multifunctional.node_classes import (
-    MaybeMultifunctionalProcess,
-    MultifunctionalProcess,
-    ReadOnlyProcessWithReferenceProduct,
-)
+import multifunctional as mf
+
+
+@pytest.fixture
+@bw2test
+def allocate_then_write(basic_data):
+    db = mf.MultifunctionalDatabase("basic")
+    db.register(default_allocation="price")
+    db.write(mf.allocation_before_writing(basic_data, "price"), process=False)
+    db.process(allocate=False)
+    return db
 
 
 def check_basic_allocation_results(factor_1, factor_2, database):
     nodes = sorted(database, key=lambda x: (x["name"], x.get("reference product", "")))
 
-    assert isinstance(nodes[0], MaybeMultifunctionalProcess)
+    assert isinstance(nodes[0], mf.MaybeMultifunctionalProcess)
     assert nodes[0]["name"] == "flow - a"
     assert not list(nodes[0].exchanges())
     assert len(nodes) == 4
 
-    assert isinstance(nodes[1], MultifunctionalProcess)
+    assert isinstance(nodes[1], mf.MultifunctionalProcess)
     assert "reference product" not in nodes[1]
     assert "mf_parent_key" not in nodes[1]
     expected = {
@@ -26,7 +33,7 @@ def check_basic_allocation_results(factor_1, factor_2, database):
     for key, value in expected.items():
         assert nodes[1][key] == value
 
-    assert isinstance(nodes[2], ReadOnlyProcessWithReferenceProduct)
+    assert isinstance(nodes[2], mf.ReadOnlyProcessWithReferenceProduct)
     expected = {
         "name": "process - 1",
         "reference product": "first product - 1",
@@ -62,7 +69,7 @@ def check_basic_allocation_results(factor_1, factor_2, database):
 
     assert not biosphere[0].get("functional")
 
-    assert isinstance(nodes[3], ReadOnlyProcessWithReferenceProduct)
+    assert isinstance(nodes[3], mf.ReadOnlyProcessWithReferenceProduct)
     expected = {
         "name": "process - 1",
         "reference product": "second product - 1",
@@ -99,15 +106,15 @@ def check_basic_allocation_results(factor_1, factor_2, database):
     assert not biosphere[0].get("functional")
 
 
-def test_without_allocation(basic):
-    nodes = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))
-    assert len(nodes) == 2
+def test_without_allocation(allocate_then_write):
+    nodes = sorted(allocate_then_write, key=lambda x: (x["name"], x.get("reference product", "")))
+    assert len(nodes) == 4
 
-    assert isinstance(nodes[0], MaybeMultifunctionalProcess)
+    assert isinstance(nodes[0], mf.MaybeMultifunctionalProcess)
     assert nodes[0]["name"] == "flow - a"
     assert not list(nodes[0].exchanges())
 
-    assert isinstance(nodes[1], MultifunctionalProcess)
+    assert isinstance(nodes[1], mf.MultifunctionalProcess)
     assert "reference product" not in nodes[1]
     assert "mf_parent_key" not in nodes[1]
     expected = {
@@ -118,10 +125,10 @@ def test_without_allocation(basic):
         assert nodes[1][key] == value
 
 
-def test_price_allocation_strategy_label(basic):
-    basic.metadata["default_allocation"] = "price"
+def test_price_allocation_strategy_label(allocate_then_write):
+    allocate_then_write.metadata["default_allocation"] = "price"
     bd.get_node(code="1").allocate()
-    nodes = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))
+    nodes = sorted(allocate_then_write, key=lambda x: (x["name"], x.get("reference product", "")))
 
     assert not nodes[0].get("mf_strategy_label")
     assert not nodes[1].get("mf_strategy_label")
@@ -129,43 +136,45 @@ def test_price_allocation_strategy_label(basic):
     assert nodes[3].get("mf_strategy_label") == "property allocation by 'price'"
 
 
-def test_price_allocation(basic):
-    basic.metadata["default_allocation"] = "price"
+def test_price_allocation(allocate_then_write):
+    allocate_then_write.metadata["default_allocation"] = "price"
     bd.get_node(code="1").allocate()
     check_basic_allocation_results(
-        4 * 7 / (4 * 7 + 6 * 12) * 10, 6 * 12 / (4 * 7 + 6 * 12) * 10, basic
+        4 * 7 / (4 * 7 + 6 * 12) * 10,
+        6 * 12 / (4 * 7 + 6 * 12) * 10,
+        allocate_then_write,
     )
 
 
-def test_mass_allocation(basic):
-    basic.metadata["default_allocation"] = "mass"
+def test_mass_allocation(allocate_then_write):
+    allocate_then_write.metadata["default_allocation"] = "mass"
     bd.get_node(code="1").allocate()
     check_basic_allocation_results(
-        4 * 6 / (4 * 6 + 6 * 4) * 10, 6 * 4 / (4 * 6 + 6 * 4) * 10, basic
+        4 * 6 / (4 * 6 + 6 * 4) * 10, 6 * 4 / (4 * 6 + 6 * 4) * 10, allocate_then_write
     )
 
 
-def test_equal_allocation(basic):
-    basic.metadata["default_allocation"] = "mass"
+def test_equal_allocation(allocate_then_write):
+    allocate_then_write.metadata["default_allocation"] = "mass"
     bd.get_node(code="1").allocate()
-    check_basic_allocation_results(5, 5, basic)
+    check_basic_allocation_results(5, 5, allocate_then_write)
 
 
-def test_allocation_uses_existing(basic):
-    basic.metadata["default_allocation"] = "price"
+def test_allocation_uses_existing(allocate_then_write):
+    allocate_then_write.metadata["default_allocation"] = "price"
     bd.get_node(code="1").allocate()
-    basic.metadata["default_allocation"] = "equal"
+    allocate_then_write.metadata["default_allocation"] = "equal"
     bd.get_node(code="1").allocate()
-    check_basic_allocation_results(5, 5, basic)
+    check_basic_allocation_results(5, 5, allocate_then_write)
 
 
-def test_allocation_already_allocated(basic):
-    basic.metadata["default_allocation"] = "price"
+def test_allocation_already_allocated(allocate_then_write):
+    allocate_then_write.metadata["default_allocation"] = "price"
     bd.get_node(code="1").allocate()
-    node = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))[2]
+    node = sorted(allocate_then_write, key=lambda x: (x["name"], x.get("reference product", "")))[2]
 
-    assert generic_allocation(node, None) == []
+    assert mf.generic_allocation(node, None) == []
 
 
-def test_allocation_not_multifunctional(basic):
-    assert generic_allocation(bd.get_node(code="a"), None) == []
+def test_allocation_not_multifunctional(allocate_then_write):
+    assert mf.generic_allocation(bd.get_node(code="a"), None) == []
