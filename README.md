@@ -88,6 +88,7 @@ To create custom allocation functions which apply a single allocation factor to 
 
 * edge_data (dict): Data on functional edge
 * node: An instance of `multifunctional.MaybeMultifunctionalProcess`
+* strategy_label: An optional string to label the allocation strategy used
 
 The custom function should return a number.
 
@@ -106,7 +107,11 @@ def allocation_factor(edge_data: dict, node: mf.MaybeMultifunctionalProcess) -> 
    else:
       return 7
 
-mf.allocation_strategies['silly'] = partial(mf.generic_allocation, func=allocation_factor)
+mf.allocation_strategies['silly'] = partial(
+   mf.generic_allocation,
+   func=allocation_factor,
+   strategy_label="something silly"
+)
 ```
 
 ### Other custom allocation functions

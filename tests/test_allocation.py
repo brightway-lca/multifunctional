@@ -118,6 +118,17 @@ def test_without_allocation(basic):
         assert nodes[1][key] == value
 
 
+def test_price_allocation_strategy_label(basic):
+    basic.metadata["default_allocation"] = "price"
+    bd.get_node(code="1").allocate()
+    nodes = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))
+
+    assert not nodes[0].get("mf_strategy_label")
+    assert not nodes[1].get("mf_strategy_label")
+    assert nodes[2].get("mf_strategy_label") == "property allocation by 'price'"
+    assert nodes[3].get("mf_strategy_label") == "property allocation by 'price'"
+
+
 def test_price_allocation(basic):
     basic.metadata["default_allocation"] = "price"
     bd.get_node(code="1").allocate()
