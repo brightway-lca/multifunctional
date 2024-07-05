@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-07-05
+
+* Allow separate products and processes
+* Allow specifying desired codes for allocated processes
+* Mark strategy functions used for allocation
+
 ## [0.1.0] - 2024-07-04
 
 First complete release
