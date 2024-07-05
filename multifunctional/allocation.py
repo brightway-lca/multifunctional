@@ -5,6 +5,8 @@ from uuid import uuid4
 
 from bw2io.utils import rescale_exchange
 from loguru import logger
+from bw2data.errors import UnknownObject
+from bw2data import get_node
 
 from .node_classes import (
     MaybeMultifunctionalProcess,
@@ -59,7 +61,6 @@ def generic_allocation(act: MaybeMultifunctionalProcess, func: Callable) -> List
         try:
             exc["code"]
         except KeyError:
-            print("No code found; using process code:", process_code)
             exc["code"] = process_code
             change = True
 
@@ -72,14 +73,31 @@ def generic_allocation(act: MaybeMultifunctionalProcess, func: Callable) -> List
                 a=repr(act),
             )
 
+        try:
+            assert not exc.get('mf_artificial_code')
+            product = get_node(database=exc["input"][0], code=exc["input"][1])
+        except (KeyError, UnknownObject, AssertionError):
+            product = None
+
         allocated_process = deepcopy(act._data)
         if "id" in allocated_process:
             del allocated_process["id"]
         allocated_process["code"] = process_code
         allocated_process["multifunctional_parent_id"] = act.id
         allocated_process["type"] = "readonly_process"
-        allocated_process["reference product"] = exc["name"]
-        allocated_process["unit"] = exc["unit"]
+
+        if "name" in exc:
+            allocated_process["reference product"] = exc["name"]
+        elif product:
+            allocated_process["reference product"] = product.get("name", "(unnamed product)")
+        else:
+            allocated_process["reference product"] = "(unnamed)"
+
+        if "unit" in exc:
+            allocated_process["unit"] = exc["unit"]
+        elif product:
+            allocated_process["unit"] = product.get("unit")
+
         new_functional_exchange = deepcopy(exc._data)
 
         # Change input from artificial one added by `add_exchange_input_if_missing`

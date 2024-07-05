@@ -118,6 +118,14 @@ To have complete control over allocation, add your own function to `allocation_s
 
 Furthermore, the code of the allocated processes (`allocated_product_code`) must be written to each functional edge (and that edge saved so this data is persisted). See the code in `multifunctional.allocation.generic_allocation` for an example.
 
+### Separate `product` nodes
+
+By default, the allocation function creates chimaera process+product nodes. However, we recommend distinguishing products and processes as best practice, and this is supported by `multifunctional`. You will need to create the `product` nodes yourself; they can be in the same multifunctional database, or in another database.
+
+To create a functional link to a `product` node in the same database, you only need to specify that product's "code" in the functional edge data. See `dev/split_products.ipynb` for a simple example.
+
+To create a functional link to a `product` node in another database, you should specify the complete `input` (e.g. `(some_database, some_code)`), as we can't infer the database in this case.
+
 ## How does it work?
 
 Recent Brightway versions allow users to specify which graph nodes types should be used when building matrices, and which types can be ignored. We create a multifunctional process node with the type `multifunctional`, which will be ignored when creating processed datapackages. However, in our database class `MultifunctionalDatabase` we change the function which creates these processed datapackages to load the multifunctional processes, perform whatever strategy is needed to handle multifunctionality, and then use the results of those handling strategies (e.g. monofunctional processes) in the processed datapackage.

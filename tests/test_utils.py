@@ -51,5 +51,4 @@ def test_add_exchange_input_if_missing(caplog):
         },
     }
     assert add_exchange_input_if_missing(given) == expected
-    print(caplog.text)
     assert "given 'code' is 'bar' but 'input' code is 'foo'" in caplog.text
