@@ -3,6 +3,7 @@
 import pytest
 from bw2data.tests import bw2test
 from fixtures.basic import DATA as BASIC_DATA
+from copy import deepcopy
 
 
 @pytest.fixture
@@ -11,6 +12,6 @@ def basic():
     from multifunctional import MultifunctionalDatabase
 
     db = MultifunctionalDatabase("basic")
-    db.write(BASIC_DATA, process=False)
+    db.write(deepcopy(BASIC_DATA), process=False)
     db.metadata["dirty"] = True
     return db

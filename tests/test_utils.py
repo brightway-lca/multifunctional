@@ -3,20 +3,22 @@ from multifunctional.utils import add_exchange_input_if_missing
 
 def test_add_exchange_input_if_missing_no_code():
     given = {
-        "foo": {
+        ("db", "code"): {
             "exchanges": [
                 {"functional": True},
+                {"functional": False},
                 {},
-                {"functional": True, "input": "bar"},
+                {"functional": True, "input": ("db", "other")},
             ]
         }
     }
     expected = {
-        "foo": {
+        ("db", "code"): {
             "exchanges": [
-                {"functional": True, "input": "foo"},
+                {"functional": True, "input": ("db", "code"), "code": "code", 'mf_artificial_code': True},
+                {"functional": False},
                 {},
-                {"functional": True, "input": "bar"},
+                {"functional": True, "input": ("db", "other"), "code": "other"},
             ]
         }
     }
@@ -25,22 +27,22 @@ def test_add_exchange_input_if_missing_no_code():
 
 def test_add_exchange_input_if_missing_code_present():
     given = {
-        "foo": {
+        ("db", "code"): {
             "database": "1",
             "exchanges": [
                 {"functional": True, "code": "2"},
                 {},
-                {"functional": True, "input": "bar"},
+                {"functional": True, "input": ("db", "other")},
             ]
         }
     }
     expected = {
-        "foo": {
+        ("db", "code"): {
             "database": "1",
             "exchanges": [
                 {"functional": True, "code": "2", "input": ("1", "2")},
                 {},
-                {"functional": True, "input": "bar"},
+                {"functional": True, "input": ("db", "other"), "code": "other"},
             ]
         }
     }

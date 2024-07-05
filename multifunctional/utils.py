@@ -14,11 +14,18 @@ def add_exchange_input_if_missing(data: dict) -> dict:
     value even if it doesn't make sense."""
     for key, ds in data.items():
         for exc in ds.get("exchanges", []):
-            if exc.get("functional") and "input" not in exc:
+            if not exc.get("functional"):
+                continue
+            if exc.get('input'):
+                if "code" not in exc:
+                    exc["code"] = exc["input"][1]
+            else:
                 if "code" in exc:
-                    exc["input"] = (ds["database"], exc['code'])
+                    exc["input"] = (exc.get('database') or ds["database"], exc['code'])
                 else:
                     exc["input"] = key
+                    exc["code"] = exc["input"][1]
+                    exc["mf_artificial_code"] = True
     return data
 
 

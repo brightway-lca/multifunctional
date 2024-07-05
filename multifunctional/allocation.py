@@ -41,35 +41,60 @@ def generic_allocation(act: MaybeMultifunctionalProcess, func: Callable) -> List
             a=repr(act),
         )
 
+        # Case 1: Edge points to nothing
+        # Case 2: Edge points to an allocated readonly process
+        # Case 3: Edge points to an existing product node
+
+        change = False
+
+        # Remove artificial code added by `add_exchange_input_if_missing`
+        if exc.get("mf_artificial_code") and "code" in exc:
+            del exc["code"]
+
         try:
-            new_code = exc["allocated_product_code"]
+            process_code = exc["mf_allocated_process_code"]
         except KeyError:
-            new_code = uuid4().hex
-            exc["allocated_product_code"] = new_code
+            process_code = exc["mf_allocated_process_code"] = uuid4().hex
+            change = True
+        try:
+            exc["code"]
+        except KeyError:
+            print("No code found; using process code:", process_code)
+            exc["code"] = process_code
+            change = True
+
+        if change:
             exc.save()
             logger.debug(
                 "Creating new product code {c} for functional edge {e} on activity {a}",
-                c=new_code,
+                c=process_code,
                 e=repr(exc),
                 a=repr(act),
             )
 
-        new_process = deepcopy(act._data)
-        new_process["multifunctional_parent_id"] = act.id
-        new_process["code"] = new_code
-        new_process["type"] = "readonly_process"
-        new_process["reference product"] = exc["name"]
-        new_process["unit"] = exc["unit"]
+        allocated_process = deepcopy(act._data)
+        if "id" in allocated_process:
+            del allocated_process["id"]
+        allocated_process["code"] = process_code
+        allocated_process["multifunctional_parent_id"] = act.id
+        allocated_process["type"] = "readonly_process"
+        allocated_process["reference product"] = exc["name"]
+        allocated_process["unit"] = exc["unit"]
         new_functional_exchange = deepcopy(exc._data)
-        new_functional_exchange["input"] = (act["database"], new_code)
-        new_process["exchanges"] = [new_functional_exchange]
 
-        for exc in act.nonfunctional_edges():
-            new_process["exchanges"].append(
-                rescale_exchange(deepcopy(exc._data), factor)
+        # Change input from artificial one added by `add_exchange_input_if_missing`
+        # to the actual code needed
+        if new_functional_exchange.get("mf_artificial_code") and "input" in new_functional_exchange:
+            new_functional_exchange["input"] = (act["database"], process_code)
+
+        allocated_process["exchanges"] = [new_functional_exchange]
+
+        for other in act.nonfunctional_edges():
+            allocated_process["exchanges"].append(
+                rescale_exchange(deepcopy(other._data), factor)
             )
 
-        new_processes.append(new_process)
+        new_processes.append(allocated_process)
 
     return new_processes
 

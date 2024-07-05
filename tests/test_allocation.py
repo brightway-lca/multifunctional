@@ -26,9 +26,6 @@ def check_basic_allocation_results(factor_1, factor_2, database):
     for key, value in expected.items():
         assert nodes[1][key] == value
 
-    for exc in nodes[1].production():
-        assert exc.get("allocated_product_code")
-
     assert isinstance(nodes[2], ReadOnlyProcessWithReferenceProduct)
     expected = {
         "name": "process - 1",
