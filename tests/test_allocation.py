@@ -38,8 +38,8 @@ def check_basic_allocation_results(factor_1, factor_2, database):
         assert nodes[2][key] == value
 
     expected = {
-        "input": nodes[2].key,
-        "output": nodes[2].key,
+        "input": ("basic", "my favorite code"),
+        "output": ("basic", "my favorite code"),
         "amount": 4,
         "type": "production",
         "functional": True,
@@ -51,7 +51,7 @@ def check_basic_allocation_results(factor_1, factor_2, database):
 
     expected = {
         "input": nodes[0].key,
-        "output": nodes[2].key,
+        "output": ("basic", "my favorite code"),
         "amount": factor_1,
         "type": "biosphere",
     }

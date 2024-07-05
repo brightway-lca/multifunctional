@@ -59,6 +59,10 @@ You don't need to use library for substitution, that already works natively in B
 
 There is currently no built-in functionality to determine if an edge is functional based on its attributes - instead we rely on the label `functional` being manually specified. You can write a function to iterate over datasets and label the functional edges in whatever fashion you choose.
 
+### Specifying `code` values for allocated products
+
+When writing a multifunctional process, we need to create artificial edges to allocated processes which don't exist yet. You can't therefore specify the `code` of such an edge - but you can tell the system what code the allocated process *should have* upon allocation using the `desired_code` edge attribute. See `dev/basic_example.ipynb` for a simple example.
+
 ### Built-in allocation functions
 
 `multifunctional` includes the following built-in property-based allocation functions:

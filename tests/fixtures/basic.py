@@ -15,6 +15,7 @@ DATA = {
             {
                 "functional": True,
                 "type": "production",
+                "desired_code": "my favorite code",
                 "name": "first product - 1",
                 "unit": "kg",
                 "amount": 4,

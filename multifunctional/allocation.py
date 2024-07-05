@@ -58,7 +58,10 @@ def generic_allocation(
             del exc["code"]
 
         try:
-            process_code = exc["mf_allocated_process_code"]
+            if "desired_code" in exc:
+                process_code = exc["desired_code"]
+            else:
+                process_code = exc["mf_allocated_process_code"]
         except KeyError:
             process_code = exc["mf_allocated_process_code"] = uuid4().hex
             change = True
