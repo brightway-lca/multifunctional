@@ -40,6 +40,10 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
 
 
 class MultifunctionalProcess(BaseMultifunctionalNode):
+    def __str__(self):
+        base = super().__str__()
+        return f"Multifunctional: {base}"
+
     def allocate(
         self, strategy_label: Optional[str] = None
     ) -> Union[None, NoAllocationNeeded]:
@@ -87,6 +91,10 @@ class MultifunctionalProcess(BaseMultifunctionalNode):
 
 
 class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):
+    def __str__(self):
+        base = super().__str__()
+        return f"Read-only allocated process: {base}"
+
     def __setitem__(self, key, value):
         raise NotImplementedError(
             "This node is read only. Update the corresponding multifunctional process."
