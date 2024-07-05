@@ -1,49 +1,55 @@
 from multifunctional.utils import add_exchange_input_if_missing
 
 
-def test_add_exchange_input_if_missing_no_code():
+def test_add_exchange_input_if_missing(caplog):
     given = {
         ("db", "code"): {
             "exchanges": [
+                {"functional": False},
+                {},
+                {"functional": True, "input": ("db", "other")},
+                {"functional": True, "input": ("db", "foo"), "code": "bar"},
+                {"functional": True, "code": "foo"},
+                {"functional": True, "code": "foo", "database": "something"},
                 {"functional": True},
-                {"functional": False},
-                {},
-                {"functional": True, "input": ("db", "other")},
             ]
-        }
+        },
+        ("db", "more"): {
+            "database": "me",
+            "exchanges": [
+                {"functional": True, "code": "foo"},
+            ],
+        },
     }
     expected = {
         ("db", "code"): {
             "exchanges": [
-                {"functional": True, "input": ("db", "code"), "code": "code", 'mf_artificial_code': True},
                 {"functional": False},
                 {},
                 {"functional": True, "input": ("db", "other"), "code": "other"},
+                {"functional": True, "input": ("db", "foo"), "code": "foo"},
+                {"functional": True, "input": ("db", "foo"), "code": "foo"},
+                {
+                    "functional": True,
+                    "input": ("something", "foo"),
+                    "code": "foo",
+                    "database": "something",
+                },
+                {
+                    "functional": True,
+                    "input": ("db", "code"),
+                    "code": "code",
+                    "mf_artificial_code": True,
+                },
             ]
-        }
+        },
+        ("db", "more"): {
+            "database": "me",
+            "exchanges": [
+                {"functional": True, "code": "foo", "input": ("db", "foo")},
+            ],
+        },
     }
     assert add_exchange_input_if_missing(given) == expected
-
-
-def test_add_exchange_input_if_missing_code_present():
-    given = {
-        ("db", "code"): {
-            "database": "1",
-            "exchanges": [
-                {"functional": True, "code": "2"},
-                {},
-                {"functional": True, "input": ("db", "other")},
-            ]
-        }
-    }
-    expected = {
-        ("db", "code"): {
-            "database": "1",
-            "exchanges": [
-                {"functional": True, "code": "2", "input": ("1", "2")},
-                {},
-                {"functional": True, "input": ("db", "other"), "code": "other"},
-            ]
-        }
-    }
-    assert add_exchange_input_if_missing(given) == expected
+    print(caplog.text)
+    assert "given 'code' is 'bar' but 'input' code is 'foo'" in caplog.text

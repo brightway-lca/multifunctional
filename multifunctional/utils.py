@@ -1,9 +1,11 @@
+from pprint import pformat
 from typing import List
 
 from bw2data import get_node
 from bw2data.backends import Exchange
 from bw2data.backends.schema import ExchangeDataset
 from bw2data.errors import UnknownObject
+from loguru import logger
 
 
 def add_exchange_input_if_missing(data: dict) -> dict:
@@ -16,12 +18,18 @@ def add_exchange_input_if_missing(data: dict) -> dict:
         for exc in ds.get("exchanges", []):
             if not exc.get("functional"):
                 continue
-            if exc.get('input'):
-                if "code" not in exc:
-                    exc["code"] = exc["input"][1]
+            if exc.get("input"):
+                if "code" in exc and exc["code"] != exc["input"][1]:
+                    logger.critical(
+                        "Mismatch in exchange: given 'code' is '{c}' but 'input' code is '{i}' in exchange:\n{e}",
+                        c=exc["code"],
+                        i=exc["input"][1],
+                        e=pformat(exc),
+                    )
+                exc["code"] = exc["input"][1]
             else:
                 if "code" in exc:
-                    exc["input"] = (exc.get('database') or ds["database"], exc['code'])
+                    exc["input"] = (exc.get("database") or key[0], exc["code"])
                 else:
                     exc["input"] = key
                     exc["code"] = exc["input"][1]

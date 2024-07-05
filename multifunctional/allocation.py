@@ -84,7 +84,10 @@ def generic_allocation(act: MaybeMultifunctionalProcess, func: Callable) -> List
 
         # Change input from artificial one added by `add_exchange_input_if_missing`
         # to the actual code needed
-        if new_functional_exchange.get("mf_artificial_code") and "input" in new_functional_exchange:
+        if (
+            new_functional_exchange.get("mf_artificial_code")
+            and "input" in new_functional_exchange
+        ):
             new_functional_exchange["input"] = (act["database"], process_code)
 
         allocated_process["exchanges"] = [new_functional_exchange]

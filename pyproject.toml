@@ -49,7 +49,8 @@ testing = [
     "bw2calc>=2.0.dev17",
     "pytest",
     "pytest-cov",
-    "python-coveralls"
+    "pytest-loguru",
+    "python-coveralls",
 ]
 dev = [
     "build",
