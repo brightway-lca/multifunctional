@@ -10,6 +10,12 @@ from bw2io.utils import rescale_exchange
 from loguru import logger
 
 
+def remove_output(d: dict) -> dict:
+    if "output" in d:
+        del d["output"]
+    return d
+
+
 def generic_allocation(
     act: Union[dict, Activity],
     func: Callable,
@@ -40,52 +46,65 @@ def generic_allocation(
 
     processes = [act]
 
-    for exc in filter(lambda x: x.get("functional"), act.get("exchanges", [])):
-        factor = func(exc, act) / total
+    for original_exc in filter(lambda x: x.get("functional"), act.get("exchanges", [])):
+        new_exc = remove_output(deepcopy(original_exc))
+
+        factor = func(original_exc, act) / total
         if not factor:
             continue
 
         logger.debug(
             "Using allocation factor {f} for functional edge {e} on activity {a}",
             f=factor,
-            e=repr(exc),
+            e=repr(original_exc),
             a=repr(act),
         )
 
         # Added by `add_exchange_input_if_missing`, but shouldn't be used
-        if exc.get("mf_artificial_code"):
-            del exc["input"]
-            del exc["mf_artificial_code"]
+        # by read-only processes. This code is only ever triggered once
+        if new_exc.get("mf_artificial_code"):
+            del original_exc["mf_artificial_code"]
+            del new_exc["mf_artificial_code"]
+            del new_exc["input"]
 
-        # We need to allow for both initial allocation, and also re-allocation
-        # We also need to generate codes for processes linked to products with existing codes
-        if exc.get("mf_allocated"):
+        if original_exc.get("mf_allocated"):
             # Don't need to think, made choice on initial allocation
-            process_code = exc["mf_allocated_process_code"]
-        elif exc.get("input"):
-            # Initial allocation with link to a known node but separate process
-            exc["mf_allocated"] = True
-            process_code = exc["mf_allocated_process_code"] = uuid4().hex
+            process_code = original_exc["mf_allocated_process_code"]
+        elif new_exc.get("input"):
+            # Initial allocation
+            original_exc["mf_allocated"] = True
+            # We have a link to a known (product) node, but need to generate the code
+            # for the separate read-only process
+            original_exc["mf_manual_input_product"] = True
+            process_code = original_exc["mf_allocated_process_code"] = uuid4().hex
         else:
+            # Initial allocation
+            original_exc["mf_allocated"] = True
             # Create new process+product node with same generated code
-            # either desired or random
-            exc["mf_allocated"] = True
-            process_code = exc["mf_allocated_process_code"] = exc.get("desired_code") or uuid4().hex
-            exc["input"] = (act["database"], process_code)
+            # This code can come from `desired_code` or be random
+            process_code = original_exc["mf_allocated_process_code"] = (
+                original_exc.get("desired_code") or uuid4().hex
+            )
+            original_exc["mf_manual_input_product"] = False
+            original_exc["input"] = new_exc["input"] = (act["database"], process_code)
             logger.debug(
                 "Creating new product code {c} for functional edge:\n{e}\nOn activity\n{a}",
                 c=process_code,
-                e=repr(exc),
+                e=repr(original_exc),
                 a=repr(act),
             )
 
-        try:
-            product = get_node(database=exc["input"][0], code=exc["input"][1])
-        except UnknownObject:
-            # Try using attributes stored on the edge
-            # Might not work, but better than trying to give access to whole raw database
-            # currently being written
-            product = exc
+        if original_exc["mf_manual_input_product"]:
+            # Get product name and unit attributes from the separate node, if available
+            try:
+                product = get_node(database=new_exc["input"][0], code=new_exc["input"][1])
+            except UnknownObject:
+                # Try using attributes stored on the edge
+                # Might not work, but better than trying to give access to whole raw database
+                # currently being written
+                product = new_exc
+        else:
+            product = None
 
         allocated_process = deepcopy(act)
         if "id" in allocated_process:
@@ -95,16 +114,18 @@ def generic_allocation(
         allocated_process["code"] = process_code
         allocated_process["mf_parent_key"] = (act["database"], act["code"])
         allocated_process["type"] = "readonly_process"
-        allocated_process["reference product"] = product.get("reference product") or product.get(
-            "name", "(unspecified)"
-        )
-        allocated_process["unit"] = product.get("unit", "(unspecified)")
-
-        new_functional_exchange = deepcopy(exc)
-        allocated_process["exchanges"] = [new_functional_exchange]
+        if product:
+            allocated_process["reference product"] = product.get("name", "(unspecified)")
+            allocated_process["unit"] = product.get("unit", "(unspecified)")
+        else:
+            allocated_process["reference product"] = new_exc.get("name", "(unspecified)")
+            allocated_process["unit"] = new_exc.get("unit") or act.get("unit", "(unspecified)")
+        allocated_process["exchanges"] = [new_exc]
 
         for other in filter(lambda x: not x.get("functional"), act["exchanges"]):
-            allocated_process["exchanges"].append(rescale_exchange(deepcopy(other), factor))
+            allocated_process["exchanges"].append(
+                remove_output(rescale_exchange(deepcopy(other), factor))
+            )
 
         processes.append(allocated_process)
 
