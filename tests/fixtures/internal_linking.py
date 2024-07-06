@@ -62,7 +62,7 @@ DATA = {
                 "input": ("internal", "🐶"),
                 "amount": 40,
                 "properties": {
-                    "price": 7,
+                    "price": 2.5,
                     "mass": 6,
                 },
             },
@@ -72,9 +72,9 @@ DATA = {
                 "name": "second product - 1",
                 "desired_code": "second - generated",
                 "unit": "megajoule",
-                "amount": 60,
+                "amount": 50,
                 "properties": {
-                    "price": 12,
+                    "price": 2,
                     "mass": 4,
                 },
             },

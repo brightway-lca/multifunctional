@@ -19,3 +19,31 @@ def test_internal_linking_results_unchanged(internal):
 
 def test_internal_linking_results_mf_process_1(internal):
     p = bd.get_node(type="multifunctional", name="process - 1")
+    assert p["location"] == "first"
+    assert not p.get("unit")
+    assert not p.get("reference product")
+
+    assert len(list(p.exchanges())) == 3
+    assert len(list(p.production())) == 2
+    assert {exc["input"] for exc in p.production()} == {
+        ("internal", "first - generated"),
+        ("internal", "😼"),
+    }
+
+
+def test_internal_linking_results_mf_process_2(internal):
+    p = bd.get_node(type="multifunctional", name="process - 2")
+    assert p["location"] == "second"
+    assert not p.get("unit")
+    assert not p.get("reference product")
+
+    assert len(list(p.exchanges())) == 4
+    assert len(list(p.production())) == 2
+    assert {exc["input"] for exc in p.production()} == {
+        ("internal", "second - generated"),
+        ("internal", "🐶"),
+    }
+
+
+def test_internal_linking_allocated_dog(internal):
+    pass
