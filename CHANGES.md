@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2024-07-06
+
+* Rewrite allocation functionality to allow for allocation before writing the database
+
 ## [0.2.0] - 2024-07-05
 
 * Allow separate products and processes

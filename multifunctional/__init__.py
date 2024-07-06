@@ -10,7 +10,7 @@ __all__ = (
     "generic_allocation",
 )
 
-__version__ = "0.2"
+__version__ = "0.3"
 
 from bw2data import labels
 from bw2data.subclass_mapping import DATABASE_BACKEND_MAPPING, NODE_PROCESS_CLASS_MAPPING
