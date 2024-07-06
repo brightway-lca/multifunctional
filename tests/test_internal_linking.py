@@ -43,7 +43,27 @@ def test_internal_linking_results_mf_process_2(internal):
         ("internal", "second - generated"),
         ("internal", "🐶"),
     }
+    assert {exc["mf_manual_input_product"] for exc in p.production()} == {True, False}
+    assert {exc["mf_allocated"] for exc in p.production()} == {True}
+    assert {exc.get("mf_artificial_code") for exc in p.production()} == {None}
 
 
 def test_internal_linking_allocated_dog(internal):
-    pass
+    # Allocation a second time will pull attributes from the product node
+    internal.process()
+    dog = bd.get_node(
+        **{
+            "name": "process - 2",
+            "reference product": "woof",
+        }
+    )
+
+    assert dog["location"] == "second"
+    assert dog.get("unit") == "kg"
+    assert dog["code"] != "2"
+
+    assert len(list(dog.exchanges())) == 3
+    assert len(list(dog.production())) == 1
+    assert {exc["input"] for exc in dog.production()} == {
+        ("internal", "🐶"),
+    }
