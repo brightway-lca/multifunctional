@@ -171,6 +171,17 @@ Furthermore, the code of the allocated processes (`mf_allocated_process_code`) m
 
 ## Technical notes
 
+### Process-specific allocation strategies
+
+Individual processes can override the default database allocation by specifying their own `default_allocation`:
+
+```python
+import bw2data
+node = bw2data.get(database="emojis FTW", code="1")
+node["default_allocation"] = "mass"
+node.save()
+```
+
 ### Specifying `code` values for allocated processes
 
 When allocating a multifunctional process to separate monofunctional processes, we need to generate `code` values for each monofunctional process. This can be done by specifying `desired_code` for the functional exchange.  See `dev/basic_example.ipynb` for a simple example.
