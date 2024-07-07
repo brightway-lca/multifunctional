@@ -140,6 +140,14 @@ def test_price_allocation(basic):
     )
 
 
+def test_manual_allocation(basic):
+    basic.metadata["default_allocation"] = "manual"
+    bd.get_node(code="1").allocate()
+    check_basic_allocation_results(
+        0.2 * 10, 0.8 * 10, basic
+    )
+
+
 def test_mass_allocation(basic):
     basic.metadata["default_allocation"] = "mass"
     bd.get_node(code="1").allocate()
@@ -149,7 +157,7 @@ def test_mass_allocation(basic):
 
 
 def test_equal_allocation(basic):
-    basic.metadata["default_allocation"] = "mass"
+    basic.metadata["default_allocation"] = "equal"
     bd.get_node(code="1").allocate()
     check_basic_allocation_results(5, 5, basic)
 

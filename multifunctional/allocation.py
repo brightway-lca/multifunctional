@@ -132,30 +132,41 @@ def generic_allocation(
     return processes
 
 
-def get_allocation_factor_from_property(edge_data: dict, node: dict, property_label: str) -> float:
+def get_allocation_factor_from_property(
+    edge_data: dict, node: dict, property_label: str, normalize_by_production_amount: bool = True
+) -> float:
     if "properties" not in edge_data:
         raise KeyError(
             f"Edge {edge_data} from process {node.get('name')} (id {node.get('id')}) doesn't have properties"
         )
     try:
-        return edge_data["amount"] * edge_data["properties"][property_label]
+        if normalize_by_production_amount:
+            return edge_data["amount"] * edge_data["properties"][property_label]
+        else:
+            return edge_data["properties"][property_label]
     except KeyError as err:
         raise KeyError(
             f"Edge {edge_data} from process {node.get('name')} (id {node.get('id')}) missing property {property_label}"
         ) from err
 
 
-def property_allocation(property_label: str) -> Callable:
+def property_allocation(
+    property_label: str, normalize_by_production_amount: bool = True
+) -> Callable:
     return partial(
         generic_allocation,
-        func=partial(get_allocation_factor_from_property, property_label=property_label),
+        func=partial(
+            get_allocation_factor_from_property,
+            property_label=property_label,
+            normalize_by_production_amount=normalize_by_production_amount,
+        ),
         strategy_label=f"property allocation by '{property_label}'",
     )
 
 
 allocation_strategies = {
     "price": property_allocation("price"),
-    "manual": property_allocation("manual"),
+    "manual": property_allocation("manual", normalize_by_production_amount=False),
     "mass": property_allocation("mass"),
     "equal": partial(generic_allocation, func=lambda x, y: 1.0),
 }

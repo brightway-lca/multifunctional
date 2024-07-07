@@ -22,6 +22,7 @@ DATA = {
                 "properties": {
                     "price": 7,
                     "mass": 6,
+                    "manual": 2,
                 },
             },
             {
@@ -33,6 +34,7 @@ DATA = {
                 "properties": {
                     "price": 12,
                     "mass": 4,
+                    "manual": 8,
                 },
             },
             {
