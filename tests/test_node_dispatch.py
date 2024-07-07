@@ -11,7 +11,7 @@ def test_basic_setup(basic):
     process = bd.get_node(code="1")
     assert isinstance(process, mf.MaybeMultifunctionalProcess)
     assert process.multifunctional
-    assert process['type'] == 'multifunctional'
+    assert process["type"] == "multifunctional"
 
     basic.metadata["default_allocation"] = "mass"
     bd.get_node(code="1").allocate()

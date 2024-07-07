@@ -26,6 +26,14 @@ def allocation_before_writing(data: Dict[tuple, dict], strategy_label: str) -> D
     return {(ds.pop("database"), ds.pop("code")): ds for ds in datasets}
 
 
+def label_multifunctional_nodes(data: dict) -> dict:
+    """Add type `multifunctional` to nodes with more than one functional exchange"""
+    for key, ds in data.items():
+        if sum(1 for exc in ds.get("exchanges", []) if exc.get("functional")) > 1:
+            ds["type"] = "multifunctional"
+    return data
+
+
 def add_exchange_input_if_missing(data: dict) -> dict:
     """Add `input` values to each functional exchange if not already present.
 

@@ -1,5 +1,6 @@
 from loguru import logger
-from multifunctional.utils import add_exchange_input_if_missing
+
+from multifunctional.utils import add_exchange_input_if_missing, label_multifunctional_nodes
 
 
 def test_add_exchange_input_if_missing(caplog):
@@ -65,3 +66,17 @@ def test_add_exchange_input_if_missing(caplog):
     }
     assert add_exchange_input_if_missing(given) == expected
     assert "given 'code' is 'bar' but 'input' code is 'foo'" in caplog.text
+
+
+def test_label_multifunctional_nodes():
+    given = {
+        1: {"exchanges": [{"functional": True}, {"functional": False}]},
+        2: {},
+        3: {"exchanges": [{"functional": True}, {"functional": True}, {}]},
+    }
+    expected = {
+        1: {"exchanges": [{"functional": True}, {"functional": False}]},
+        2: {},
+        3: {"exchanges": [{"functional": True}, {"functional": True}, {}], "type": "multifunctional"},
+    }
+    assert label_multifunctional_nodes(given) == expected
