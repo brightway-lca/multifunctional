@@ -77,6 +77,9 @@ def test_label_multifunctional_nodes():
     expected = {
         1: {"exchanges": [{"functional": True}, {"functional": False}]},
         2: {},
-        3: {"exchanges": [{"functional": True}, {"functional": True}, {}], "type": "multifunctional"},
+        3: {
+            "exchanges": [{"functional": True}, {"functional": True}, {}],
+            "type": "multifunctional",
+        },
     }
     assert label_multifunctional_nodes(given) == expected
