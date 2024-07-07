@@ -58,7 +58,6 @@ class MultifunctionalDatabase(SQLiteBackend):
 
     def process(self, csv: bool = False, allocate: bool = True) -> None:
         if allocate:
-            for node in self:
-                if node.has_multiple_functional_edges:
-                    node.allocate()
+            for node in filter(lambda x: x.multifunctional, self):
+                node.allocate()
         super().process(csv=csv)

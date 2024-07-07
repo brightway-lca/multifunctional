@@ -1,7 +1,10 @@
+from loguru import logger
 from multifunctional.utils import add_exchange_input_if_missing
 
 
 def test_add_exchange_input_if_missing(caplog):
+    logger.enable("multifunctional")
+
     given = {
         ("db", "code"): {
             "exchanges": [

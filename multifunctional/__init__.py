@@ -3,7 +3,6 @@ __all__ = (
     "allocation_strategies",
     "MaybeMultifunctionalProcess",
     "MultifunctionalDatabase",
-    "MultifunctionalProcess",
     "ReadOnlyProcessWithReferenceProduct",
     "property_allocation",
     "allocation_before_writing",
@@ -15,7 +14,6 @@ __version__ = "0.3"
 # Follows guidance from https://loguru.readthedocs.io/en/stable/resources/recipes.html#configuring-loguru-to-be-used-by-a-library-or-an-application
 # For development or to get more detail on what is really happening, re-enable with:
 # logger.enable("multifunctional")
-
 from loguru import logger
 logger.disable("multifunctional")
 
@@ -26,7 +24,6 @@ from .allocation import allocation_strategies, generic_allocation, property_allo
 from .database import MultifunctionalDatabase
 from .node_classes import (
     MaybeMultifunctionalProcess,
-    MultifunctionalProcess,
     ReadOnlyProcessWithReferenceProduct,
 )
 from .node_dispatch import multifunctional_node_dispatcher

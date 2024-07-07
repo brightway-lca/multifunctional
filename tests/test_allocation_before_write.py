@@ -23,7 +23,8 @@ def check_basic_allocation_results(factor_1, factor_2, database):
     assert not list(nodes[0].exchanges())
     assert len(nodes) == 4
 
-    assert isinstance(nodes[1], mf.MultifunctionalProcess)
+    assert isinstance(nodes[1], mf.MaybeMultifunctionalProcess)
+    assert nodes[1].multifunctional
     assert "reference product" not in nodes[1]
     assert "mf_parent_key" not in nodes[1]
     expected = {
@@ -114,7 +115,8 @@ def test_without_allocation(allocate_then_write):
     assert nodes[0]["name"] == "flow - a"
     assert not list(nodes[0].exchanges())
 
-    assert isinstance(nodes[1], mf.MultifunctionalProcess)
+    assert isinstance(nodes[1], mf.MaybeMultifunctionalProcess)
+    assert nodes[1].multifunctional
     assert "reference product" not in nodes[1]
     assert "mf_parent_key" not in nodes[1]
     expected = {

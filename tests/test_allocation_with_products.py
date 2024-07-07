@@ -3,7 +3,6 @@ import bw2data as bd
 from multifunctional.allocation import generic_allocation
 from multifunctional.node_classes import (
     MaybeMultifunctionalProcess,
-    MultifunctionalProcess,
     ReadOnlyProcessWithReferenceProduct,
 )
 
@@ -21,7 +20,8 @@ def check_products_allocation_results(factor_1, factor_2, database):
     assert not list(nodes[1].exchanges())
     assert len(nodes) == 5
 
-    assert isinstance(nodes[2], MultifunctionalProcess)
+    assert isinstance(nodes[2], MaybeMultifunctionalProcess)
+    assert nodes[2].multifunctional
     assert "reference product" not in nodes[2]
     assert "mf_parent_key" not in nodes[2]
     expected = {
@@ -118,7 +118,8 @@ def test_without_allocation(products):
     assert nodes[1]["name"] == "flow - a"
     assert not list(nodes[1].exchanges())
 
-    assert isinstance(nodes[2], MultifunctionalProcess)
+    assert isinstance(nodes[2], MaybeMultifunctionalProcess)
+    assert nodes[2].multifunctional
     assert "reference product" not in nodes[2]
     assert "mf_parent_key" not in nodes[2]
     expected = {

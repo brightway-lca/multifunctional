@@ -17,7 +17,7 @@ class BaseMultifunctionalNode(Activity):
         return (edge for edge in self.exchanges() if not edge.get("functional"))
 
     @property
-    def has_multiple_functional_edges(self):
+    def multifunctional(self):
         return len(list(self.functional_edges())) > 1
 
 
@@ -27,24 +27,25 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
     Sets flag on save if multifunctional."""
 
     def save(self):
-        if self.has_multiple_functional_edges:
+        if self.multifunctional:
             self._data["type"] = "multifunctional"
-            logger.info(
-                "Process {p} is multifunctional - please reload with `get_node(id={i})`",
-                p=repr(self),
-                i=self.id,
-            )
         else:
             self._data["type"] = "process"
         super().save()
 
-
-class MultifunctionalProcess(BaseMultifunctionalNode):
     def __str__(self):
         base = super().__str__()
-        return f"Multifunctional: {base}"
+        if self.multifunctional:
+            return f"Multifunctional: {base}"
+        else:
+            return base
 
     def allocate(self, strategy_label: Optional[str] = None) -> Union[None, NoAllocationNeeded]:
+        if self.get("skip_allocation"):
+            return NoAllocationNeeded
+        elif not self.multifunctional:
+            return NoAllocationNeeded
+
         from . import allocation_strategies
 
         if strategy_label is None:
@@ -60,11 +61,6 @@ class MultifunctionalProcess(BaseMultifunctionalNode):
         elif strategy_label not in allocation_strategies:
             raise KeyError(f"Given strategy label {strategy_label} not in `allocation_strategies`")
 
-        if self.get("skip_allocation"):
-            return NoAllocationNeeded
-        elif not self.has_multiple_functional_edges:
-            return NoAllocationNeeded
-
         logger.debug(
             "Allocating {p} (id: {i}) with strategy {s}",
             p=repr(self),
@@ -76,14 +72,10 @@ class MultifunctionalProcess(BaseMultifunctionalNode):
         update_datasets_from_allocation_results(allocated_data)
 
     def rp_exchange(self):
-        raise ValueError("Multifunctional processes have no reference product")
-
-    def save(self):
-        if self.has_multiple_functional_edges:
-            self["type"] = "multifunctional"
+        if self.multifunctional:
+            raise ValueError("Multifunctional processes have no reference product")
         else:
-            self["type"] = "process"
-        super().save()
+            return super().rp_exchange()
 
 
 class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):

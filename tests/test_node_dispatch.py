@@ -9,7 +9,9 @@ def test_basic_setup(basic):
     assert isinstance(flow, mf.MaybeMultifunctionalProcess)
 
     process = bd.get_node(code="1")
-    assert isinstance(process, mf.MultifunctionalProcess)
+    assert isinstance(process, mf.MaybeMultifunctionalProcess)
+    assert process.multifunctional
+    assert process['type'] == 'multifunctional'
 
     basic.metadata["default_allocation"] = "mass"
     bd.get_node(code="1").allocate()
