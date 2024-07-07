@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### [0.4.1] - 2024-07-07
+
+* Add capability for property-based allocation  to not be normalized by production amount
+* Manual property-based allocation is not normalized by production amount
+
 ### [0.4.0] - 2024-07-07
 
 * Collapse `MaybeMultifunctionalProcess` and `MultifunctionalProcess`
