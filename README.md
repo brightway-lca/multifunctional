@@ -41,27 +41,70 @@ Multifunctional activities can lead to linear algebra problems which don't have 
 
 This library is designed around the following workflow:
 
-1. Multifunctional process(es) are created and saved in a `MultifunctionalDatabase`. A multifunctional process is any process with multiple functional edges, either outputs (e.g. products) and/or input (e.g. wastes). Each functional edge must be labelled `functional=True`.
-2. The user specifies an allocation strategy for the database:
+Users create and register a `multifunctional.MultifunctionalDatabase`. Registering this database must include the database metadata key `default_allocation`, which refers to an allocation strategy function present in `multifunctional.allocation_strategies`.
 
 ```python
-database_obj.metadata['default_allocation'] = 'price'
+import multifunctional
+mf_db = multifunctional.MultifunctionalDatabase("emojis FTW")
+mf_db.register(default_allocation="price")
 ```
 
-3. Process the database to create the allocated monofunctional processes: `database_obj.process()`.
-4. LCA calculations can then be done as normal. See `dev/basic_example.ipynb` for a simple example.
+Multifunctional process(es) are created and written to the `MultifunctionalDatabase`. A multifunctional process is any process with multiple "functional" edges, either outputs (e.g. products) and/or input (e.g. wastes). Each functional edge must be labelled `functional=True`. This labeling can be done manually or via a classification function.
+
+```python
+mf_data = {
+    ("emojis FTW", "😼"): {
+        "type": "product",
+        "name": "meow",
+        "unit": "kg",
+    },
+    ("emojis FTW", "🐶"): {
+        "type": "product",
+        "name": "woof",
+        "unit": "kg",
+    },
+    ("emojis FTW", "1"): {
+        "name": "process - 1",
+        "location": "somewhere",
+        "exchanges": [
+            {
+                "functional": True,
+                "type": "production",
+                "input": ("emojis FTW", "😼"),
+                "amount": 4,
+                "properties": {
+                    "price": 7,
+                    "mass": 6,
+                },
+            },
+            {
+                "functional": True,
+                "type": "technosphere",
+                "input": ("emojis FTW", "🐶"),
+                "amount": 6,
+                "properties": {
+                    "price": 12,
+                    "mass": 4,
+                },
+            },
+        ],
+    }
+}
+```
+
+Allocation can be done manually before writing the data to the database; if not done manually, it will be done automatically upon calling `.write()`
+
+LCA calculations can then be done as normal. See `dev/basic_example.ipynb` for a simple example.
 
 ### Substitution
 
 You don't need to use library for substitution, that already works natively in Brightway. Just produce a product which another process also produces (i.e. has the same database name and code), and the production amount of the other process will be reduced as needed to meet the functional unit demand.
 
+We will eventually have a plan for including substitution in parallel with allocation.
+
 ### Classifying functional edges
 
 There is currently no built-in functionality to determine if an edge is functional based on its attributes - instead we rely on the label `functional` being manually specified. You can write a function to iterate over datasets and label the functional edges in whatever fashion you choose.
-
-### Specifying `code` values for allocated products
-
-When writing a multifunctional process, we need to create artificial edges to allocated processes which don't exist yet. You can't therefore specify the `code` of such an edge - but you can tell the system what code the allocated process *should have* upon allocation using the `desired_code` edge attribute. See `dev/basic_example.ipynb` for a simple example.
 
 ### Built-in allocation functions
 
@@ -70,10 +113,9 @@ When writing a multifunctional process, we need to create artificial edges to al
 * `price`: Does economic allocation based on the property "price" in each functional edge.
 * `mass`: Does economic allocation based on the property "mass" in each functional edge.
 * `manual`: Does economic allocation based on the property "manual" in each functional edge.
+* `equal`: Splits burdens equally among all functional edges.
 
 Property-based allocation assumes that each functional edge has a `properties` dictionary, and this dictionary has the relevant key with a corresponding numeric value. For example, for `price` allocation, each functional edge needs to have `'properties' = {'price': some_number}`.
-
-The allocation strategy `equal` is also included, though mostly for testing purposes. This divides impacts equally across each functional edge.
 
 ### Custom property-based allocation functions
 
@@ -81,10 +123,10 @@ To create new property-based allocation functions, add an entry to `allocation_s
 
 ```python
 import multifunctional as mf
-mf.allocation_strategies['foo'] = property_allocation('bar')
+mf.allocation_strategies['<label in function dictionary>'] = property_allocation(property_label='<property string>')
 ```
 
-Additions to `allocation_strategies` are not persisted, so need to be repeated in each Python interpreter.
+Additions to `allocation_strategies` are not persisted, so they need to be added each time you start a new Python interpreter or Jupyter notebook.
 
 ### Custom single-factor allocation functions
 
@@ -120,20 +162,26 @@ mf.allocation_strategies['silly'] = partial(
 
 ### Other custom allocation functions
 
-To have complete control over allocation, add your own function to `allocation_strategies`. This function should take an input of `multifunctional.MultifunctionalProcess`, and return a list of dictionaries. These dictionaries can follow the [normal `ProcessWithReferenceProduct` data schema](https://github.com/brightway-lca/bw_interface_schemas/blob/5fb1d40587aec2a4bb2248505550fc883a91c355/bw_interface_schemas/lci.py#L83), but the new node datasets need to also include the following:
+To have complete control over allocation, add your own function to `allocation_strategies`. This function should take an input of *either* `multifunctional.MaybeMultifunctionalProcess` or a plain data dictionary, and return a list of data dictionaries *including the original input process*. These dictionaries can follow the [normal `ProcessWithReferenceProduct` data schema](https://github.com/brightway-lca/bw_interface_schemas/blob/5fb1d40587aec2a4bb2248505550fc883a91c355/bw_interface_schemas/lci.py#L83), but the result datasets need to also include the following:
 
 * `mf_parent_key`: Integer database id of the source multifunctional process
-* `type`: Should always be "readonly_process"
+* `type`: One of "readonly_process", "process", or "multifunctional"
 
-Furthermore, the code of the allocated processes (`allocated_product_code`) must be written to each functional edge (and that edge saved so this data is persisted). See the code in `multifunctional.allocation.generic_allocation` for an example.
+Furthermore, the code of the allocated processes (`mf_allocated_process_code`) must be written to each functional edge (and that edge saved so this data is persisted). See the code in `multifunctional.allocation.generic_allocation` for an example.
+
+## Technical notes
+
+### Specifying `code` values for allocated processes
+
+When allocating a multifunctional process to separate monofunctional processes, we need to generate `code` values for each monofunctional process. This can be done by specifying `desired_code` for the functional exchange.  See `dev/basic_example.ipynb` for a simple example.
+
+When writing a multifunctional process, we need to create artificial edges to allocated processes which don't exist yet. You can't therefore directly specify the `code` of such an edge.
 
 ### Separate `product` nodes
 
 By default, the allocation function creates chimaera process+product nodes. However, we recommend distinguishing products and processes as best practice, and this is supported by `multifunctional`. You will need to create the `product` nodes yourself; they can be in the same multifunctional database, or in another database.
 
-To create a functional link to a `product` node in the same database, you only need to specify that product's "code" in the functional edge data. See `dev/split_products.ipynb` for a simple example.
-
-To create a functional link to a `product` node in another database, you should specify the complete `input` (e.g. `(some_database, some_code)`), as we can't infer the database in this case.
+To create a functional link to a `product` node in the same database, you should specify an exchange `input` to the desired product. See `dev/split_products.ipynb` for a simple example. The product can be in the mutifunctional database, but doesn't have to be.
 
 ## How does it work?
 
