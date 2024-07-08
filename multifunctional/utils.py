@@ -84,3 +84,15 @@ def update_datasets_from_allocation_results(data: List[dict]) -> None:
             exc.update(**exc_data)
             exc.output = node
             exc.save()
+
+
+def product_as_process_name(data: List[dict]) -> None:
+    """Some import formats, notably SimaPro, give a process name but then never use it - instead,
+    they want linking only via products (there is not process name). So this function overrides
+    the process name with the functional product name.
+
+    Only applies when there is a single functional edge."""
+    for ds in data:
+        functional_excs = [exc for exc in ds['exchanges'] if exc.get("functional")]
+        if len(functional_excs) == 1 and functional_excs[0].get('name'):
+            ds['name'] = functional_excs[0]['name']

@@ -17,6 +17,9 @@ def multifunctional_dispatcher_method(db: "MultifunctionalDatabase", document: A
     return multifunctional_node_dispatcher(document)
 
 
+SIMAPRO_ATTRIBUTES = ('simapro_project', 'simapro_libraries', 'simapro_filepath', 'simapro_version', 'simapro_csv_version')
+
+
 class MultifunctionalDatabase(SQLiteBackend):
     """A database which includes multifunctional processes (i.e. processes which have more than one
     functional input and/or output edge). Such multifunctional processes normally break square
@@ -52,12 +55,14 @@ class MultifunctionalDatabase(SQLiteBackend):
     backend = "multifunctional"
     node_class = multifunctional_dispatcher_method
 
-    def write(self, data: dict, *args, **kwargs) -> None:
+    def write(self, data: dict, **kwargs) -> None:
         data = label_multifunctional_nodes(add_exchange_input_if_missing(data))
-        super().write(data, *args, **kwargs)
+        super().write(data, **kwargs)
 
     def process(self, csv: bool = False, allocate: bool = True) -> None:
         if allocate:
+            is_simapro = any(key in self.metadata for key in SIMAPRO_ATTRIBUTES) or self.metadata.get("products_as_process")
+
             for node in filter(lambda x: x.multifunctional, self):
-                node.allocate()
+                node.allocate(products_as_process=is_simapro)
         super().process(csv=csv)
