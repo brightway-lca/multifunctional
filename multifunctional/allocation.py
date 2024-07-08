@@ -166,7 +166,7 @@ def property_allocation(
 
 allocation_strategies = {
     "price": property_allocation("price"),
-    "manual": property_allocation("manual", normalize_by_production_amount=False),
+    "manual_allocation": property_allocation("manual_allocation", normalize_by_production_amount=False),
     "mass": property_allocation("mass"),
     "equal": partial(generic_allocation, func=lambda x, y: 1.0),
 }

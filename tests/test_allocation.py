@@ -141,7 +141,7 @@ def test_price_allocation(basic):
 
 
 def test_manual_allocation(basic):
-    basic.metadata["default_allocation"] = "manual"
+    basic.metadata["default_allocation"] = "manual_allocation"
     bd.get_node(code="1").allocate()
     check_basic_allocation_results(
         0.2 * 10, 0.8 * 10, basic

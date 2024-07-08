@@ -22,7 +22,7 @@ DATA = {
                 "properties": {
                     "price": 7,
                     "mass": 6,
-                    "manual": 2,
+                    "manual_allocation": 2,
                 },
             },
             {
@@ -34,7 +34,7 @@ DATA = {
                 "properties": {
                     "price": 12,
                     "mass": 4,
-                    "manual": 8,
+                    "manual_allocation": 8,
                 },
             },
             {

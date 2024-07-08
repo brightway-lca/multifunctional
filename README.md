@@ -112,7 +112,7 @@ There is currently no built-in functionality to determine if an edge is function
 
 * `price`: Does economic allocation based on the property "price" in each functional edge.
 * `mass`: Does economic allocation based on the property "mass" in each functional edge.
-* `manual`: Does allocation based on the property "manual" in each functional edge. Doesn't normalize by amount of production exchange.
+* `manual_allocation`: Does allocation based on the property "manual_allocation" in each functional edge. Doesn't normalize by amount of production exchange.
 * `equal`: Splits burdens equally among all functional edges.
 
 Property-based allocation assumes that each functional edge has a `properties` dictionary, and this dictionary has the relevant key with a corresponding numeric value. For example, for `price` allocation, each functional edge needs to have `'properties' = {'price': some_number}`.
