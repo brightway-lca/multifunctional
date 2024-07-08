@@ -1,7 +1,5 @@
 import bw2data as bd
 
-import multifunctional as mf
-
 
 def test_internal_linking_results_unchanged(internal):
     dog = bd.get_node(code="🐶")
@@ -66,4 +64,25 @@ def test_internal_linking_allocated_dog(internal):
     assert len(list(dog.production())) == 1
     assert {exc["input"] for exc in dog.production()} == {
         ("internal", "🐶"),
+    }
+
+
+def test_internal_linking_allocated_cat(internal):
+    # Allocation a second time will pull attributes from the product node
+    internal.process()
+    cat = bd.get_node(
+        **{
+            "name": "process - 1",
+            "reference product": "meow",
+        }
+    )
+
+    assert cat["location"] == "first"
+    assert cat.get("unit") == "kg"
+    assert cat["code"] != "2"
+
+    assert len(list(cat.exchanges())) == 2
+    assert len(list(cat.production())) == 1
+    assert {exc["input"] for exc in cat.production()} == {
+        ("internal", "😼"),
     }
