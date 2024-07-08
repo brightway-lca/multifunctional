@@ -114,12 +114,13 @@ def generic_allocation(
         allocated_process["code"] = process_code
         allocated_process["mf_parent_key"] = (act["database"], act["code"])
         allocated_process["type"] = "readonly_process"
+        allocated_process["production amount"] = original_exc["amount"]
         if product:
-            allocated_process["reference product"] = product.get("name", "(unspecified)")
-            allocated_process["unit"] = product.get("unit", "(unspecified)")
+            allocated_process["reference product"] = product.get("name", "(unknown)")
+            allocated_process["unit"] = product.get("unit", "(unknown)")
         else:
-            allocated_process["reference product"] = new_exc.get("name", "(unspecified)")
-            allocated_process["unit"] = new_exc.get("unit") or act.get("unit", "(unspecified)")
+            allocated_process["reference product"] = new_exc.get("name", "(unknown)")
+            allocated_process["unit"] = new_exc.get("unit") or act.get("unit", "(unknown)")
         allocated_process["exchanges"] = [new_exc]
 
         for other in filter(lambda x: not x.get("functional"), act["exchanges"]):
