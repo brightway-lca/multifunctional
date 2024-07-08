@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### [0.5] - 2024-07-08
+
+* Allow products to overwrite process names when importing SimaPro
+
 ### [0.4.3] - 2024-07-08
 
 * Remove unneeded dependency on `bw_simapro_csv`
