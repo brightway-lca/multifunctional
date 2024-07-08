@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### [0.4.2] - 2024-07-08
+
+* Change "manual" allocation and property key to "manual_allocation".
+
 ### [0.4.1] - 2024-07-07
 
 * Add capability for property-based allocation  to not be normalized by production amount
