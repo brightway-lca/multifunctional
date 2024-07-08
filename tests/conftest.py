@@ -1,5 +1,3 @@
-"""Fixtures for bw_simapro_csv"""
-
 from copy import deepcopy
 
 import pytest

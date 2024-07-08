@@ -31,7 +31,6 @@ requires-python = ">=3.9"
 dependencies = [
     "bw2data>=4.0.dev45",
     "bw2io>=0.9.dev28",
-    "bw_simapro_csv",
     "bw_processing>=0.9.5",
     "numpy<2",
     "loguru",

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### [0.4.3] - 2024-07-08
+
+* Remove unneeded dependency on `bw_simapro_csv`
+
 ### [0.4.2] - 2024-07-08
 
 * Change "manual" allocation and property key to "manual_allocation".
