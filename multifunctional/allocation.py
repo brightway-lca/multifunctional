@@ -51,6 +51,11 @@ def generic_allocation(
 
         factor = func(original_exc, act) / total
         if not factor:
+            # Functional product of multifunctional process, but with allocation factor of zero
+            # We need to link to *something*, so link to original multifunctional process to avoid
+            # unlinked exchanges
+            if not original_exc.get("input"):
+                original_exc["input"] = (act["database"], act["code"])
             continue
 
         logger.debug(
