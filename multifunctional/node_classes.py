@@ -6,7 +6,7 @@ from loguru import logger
 
 from .edge_classes import ReadOnlyExchanges
 from .errors import NoAllocationNeeded
-from .utils import update_datasets_from_allocation_results, product_as_process_name
+from .utils import product_as_process_name, update_datasets_from_allocation_results
 
 
 class BaseMultifunctionalNode(Activity):
@@ -40,7 +40,9 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
         else:
             return base
 
-    def allocate(self, strategy_label: Optional[str] = None, products_as_process: bool = False) -> Union[None, NoAllocationNeeded]:
+    def allocate(
+        self, strategy_label: Optional[str] = None, products_as_process: bool = False
+    ) -> Union[None, NoAllocationNeeded]:
         if self.get("skip_allocation"):
             return NoAllocationNeeded
         elif not self.multifunctional:

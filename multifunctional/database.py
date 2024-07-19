@@ -17,7 +17,13 @@ def multifunctional_dispatcher_method(db: "MultifunctionalDatabase", document: A
     return multifunctional_node_dispatcher(document)
 
 
-SIMAPRO_ATTRIBUTES = ('simapro_project', 'simapro_libraries', 'simapro_filepath', 'simapro_version', 'simapro_csv_version')
+SIMAPRO_ATTRIBUTES = (
+    "simapro_project",
+    "simapro_libraries",
+    "simapro_filepath",
+    "simapro_version",
+    "simapro_csv_version",
+)
 
 
 class MultifunctionalDatabase(SQLiteBackend):
@@ -61,7 +67,9 @@ class MultifunctionalDatabase(SQLiteBackend):
 
     def process(self, csv: bool = False, allocate: bool = True) -> None:
         if allocate:
-            is_simapro = any(key in self.metadata for key in SIMAPRO_ATTRIBUTES) or self.metadata.get("products_as_process")
+            is_simapro = any(
+                key in self.metadata for key in SIMAPRO_ATTRIBUTES
+            ) or self.metadata.get("products_as_process")
 
             for node in filter(lambda x: x.multifunctional, self):
                 node.allocate(products_as_process=is_simapro)

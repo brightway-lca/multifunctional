@@ -13,7 +13,7 @@ def test_allocation_with_product_as_process_node(basic):
     )
     node.parent.allocate(products_as_process=True)
     node = bd.get_node(id=node.id)
-    assert node['name'] == 'first product - 1'
+    assert node["name"] == "first product - 1"
 
 
 def test_allocation_with_product_as_process_database(basic):
@@ -26,8 +26,8 @@ def test_allocation_with_product_as_process_database(basic):
             "reference product": "first product - 1",
         }
     )
-    basic.metadata['simapro_project'] = '1.2.3'
+    basic.metadata["simapro_project"] = "1.2.3"
     basic.process()
 
     node = bd.get_node(id=node.id)
-    assert node['name'] == 'first product - 1'
+    assert node["name"] == "first product - 1"

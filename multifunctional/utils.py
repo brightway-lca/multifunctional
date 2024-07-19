@@ -93,6 +93,6 @@ def product_as_process_name(data: List[dict]) -> None:
 
     Only applies when there is a single functional edge."""
     for ds in data:
-        functional_excs = [exc for exc in ds['exchanges'] if exc.get("functional")]
-        if len(functional_excs) == 1 and functional_excs[0].get('name'):
-            ds['name'] = functional_excs[0]['name']
+        functional_excs = [exc for exc in ds["exchanges"] if exc.get("functional")]
+        if len(functional_excs) == 1 and functional_excs[0].get("name"):
+            ds["name"] = functional_excs[0]["name"]

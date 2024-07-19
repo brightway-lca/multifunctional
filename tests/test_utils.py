@@ -1,7 +1,12 @@
 import bw2data as bd
 from loguru import logger
 
-from multifunctional.utils import add_exchange_input_if_missing, label_multifunctional_nodes, update_datasets_from_allocation_results, product_as_process_name
+from multifunctional.utils import (
+    add_exchange_input_if_missing,
+    label_multifunctional_nodes,
+    product_as_process_name,
+    update_datasets_from_allocation_results,
+)
 
 
 def test_add_exchange_input_if_missing(caplog):
@@ -90,13 +95,13 @@ def test_product_as_process_name():
     given = [
         {"exchanges": [{"functional": True}, {"functional": True}]},
         {"exchanges": [{"functional": True}]},
-        {"exchanges": [{"functional": True, "name": 'night train'}]},
+        {"exchanges": [{"functional": True, "name": "night train"}]},
         {"exchanges": []},
     ]
     expected = [
         {"exchanges": [{"functional": True}, {"functional": True}]},
         {"exchanges": [{"functional": True}]},
-        {"name": 'night train', "exchanges": [{"functional": True, "name": 'night train'}]},
+        {"name": "night train", "exchanges": [{"functional": True, "name": "night train"}]},
         {"exchanges": []},
     ]
     product_as_process_name(given)
