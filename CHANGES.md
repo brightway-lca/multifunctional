@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6] - 2024-08-21
+
+* Fix [#19: Store default allocation value and function string on mutifunctional processes](https://github.com/brightway-lca/multifunctional/issues/19)
+* Fix [#18: Allocation functions should primarily get properties from nodes, not exchanges](https://github.com/brightway-lca/multifunctional/issues/18)
+* Fix `bw2data` [#182: `multifunctional` import doesn't add new process types to `labels.node_types`](https://github.com/brightway-lca/brightway2-data/issues/182)
+
 ### [0.5.1] - 2024-07-19
 
 * Add codes to functional exchanges with zero allocation factors in multifunctional processes
