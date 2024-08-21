@@ -57,6 +57,17 @@ def generic_allocation(
         new_exc = remove_output(deepcopy(original_exc))
 
         factor = func(original_exc, act) / total
+        original_exc["mf_allocation_factor"] = factor
+
+        if '__mf__properties_from_product' in new_exc:
+            for key in new_exc['__mf__properties_from_product']:
+                del new_exc['properties'][key]
+            del new_exc['__mf__properties_from_product']
+        if '__mf__properties_from_product' in original_exc:
+            for key in original_exc['__mf__properties_from_product']:
+                del original_exc['properties'][key]
+            del original_exc['__mf__properties_from_product']
+
         if not factor:
             # Functional product of multifunctional process, but with allocation factor of zero
             # We need to link to *something*, so link to original multifunctional process to avoid
@@ -122,7 +133,7 @@ def generic_allocation(
         if "id" in allocated_process:
             del allocated_process["id"]
         if strategy_label:
-            allocated_process["mf_strategy_label"] = strategy_label
+            allocated_process["mf_strategy_label"] = act["mf_strategy_label"] = strategy_label
         allocated_process["code"] = process_code
         allocated_process["mf_parent_key"] = (act["database"], act["code"])
         allocated_process["type"] = "readonly_process"
@@ -180,8 +191,9 @@ def property_allocation(
 allocation_strategies = {
     "price": property_allocation("price"),
     "manual_allocation": property_allocation(
-        "manual_allocation", normalize_by_production_amount=False
+        "manual_allocation",
+        normalize_by_production_amount=False
     ),
     "mass": property_allocation("mass"),
-    "equal": partial(generic_allocation, func=lambda x, y: 1.0),
+    "equal": partial(generic_allocation, func=lambda x, y: 1.0, strategy_label="equal_allocation"),
 }

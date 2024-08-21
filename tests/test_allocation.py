@@ -127,7 +127,7 @@ def test_price_allocation_strategy_label(basic):
     nodes = sorted(basic, key=lambda x: (x["name"], x.get("reference product", "")))
 
     assert not nodes[0].get("mf_strategy_label")
-    assert not nodes[1].get("mf_strategy_label")
+    assert nodes[1].get("mf_strategy_label") == "property allocation by 'price'"
     assert nodes[2].get("mf_strategy_label") == "property allocation by 'price'"
     assert nodes[3].get("mf_strategy_label") == "property allocation by 'price'"
 

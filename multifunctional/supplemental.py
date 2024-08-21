@@ -19,12 +19,15 @@ def add_product_node_properties_to_exchange(obj: dict) -> dict:
         if not exc.get("properties"):
             exc['properties'] = {}
 
+        exc['__mf__properties_from_product'] = set()
+
         try:
             other = bd.get_node(database=other[0], code=other[1])
         except bd.errors.UnknownObject:
             continue
         for k, v in other.get("properties", {}).items():
             if k not in exc['properties']:
+                exc['__mf__properties_from_product'].add(k)
                 exc['properties'][k] = v
 
     return obj

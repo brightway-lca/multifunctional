@@ -32,6 +32,7 @@ def test_not_overwrite_properties():
             'input': ("foo", "1"),
             'functional': True,
             'type': 'production',
+            '__mf__properties_from_product': {'second'},
             'properties': {
                 'first': 7,
                 'second': False
@@ -65,6 +66,7 @@ def test_update_properties_production():
         'exchanges': [{
             'input': ("foo", "1"),
             'functional': True,
+            '__mf__properties_from_product': {'first', 'second'},
             'type': 'production',
             'properties': {
                 'first': True,
@@ -101,6 +103,7 @@ def test_update_properties_technosphere():
             'input': ("foo", "1"),
             'functional': True,
             'type': 'technosphere',
+            '__mf__properties_from_product': {'first', 'second'},
             'properties': {
                 'first': True,
                 'second': False
@@ -198,6 +201,7 @@ def test_get_properties_different_database():
             'input': ("bar", "1"),
             'functional': True,
             'type': 'production',
+            '__mf__properties_from_product': {'second'},
             'properties': {
                 'first': 7,
                 'second': False
