@@ -1,3 +1,4 @@
+import warnings
 from typing import Optional, Union
 
 from bw2data import databases, get_node, labels
@@ -37,15 +38,14 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
         base = super().__str__()
         if self.multifunctional:
             return f"Multifunctional: {base}"
-        else:
-            return base
+        return base
 
     def allocate(
         self, strategy_label: Optional[str] = None, products_as_process: bool = False
     ) -> Union[None, NoAllocationNeeded]:
         if self.get("skip_allocation"):
             return NoAllocationNeeded
-        elif not self.multifunctional:
+        if not self.multifunctional:
             return NoAllocationNeeded
 
         from . import allocation_strategies
@@ -60,7 +60,7 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
             raise ValueError(
                 "Can't find `default_allocation` in input arguments, or process/database metadata."
             )
-        elif strategy_label not in allocation_strategies:
+        if strategy_label not in allocation_strategies:
             raise KeyError(f"Given strategy label {strategy_label} not in `allocation_strategies`")
 
         logger.debug(
@@ -78,8 +78,7 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
     def rp_exchange(self):
         if self.multifunctional:
             raise ValueError("Multifunctional processes have no reference product")
-        else:
-            return super().rp_exchange()
+        return super().rp_exchange()
 
 
 class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):
@@ -121,22 +120,34 @@ class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):
             "This node is read only. Update the corresponding multifunctional process."
         )
 
-    def exchanges(self):
+    def exchanges(self, exchanges_class=None):
+        if exchanges_class is not None:
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().exchanges(exchanges_class=ReadOnlyExchanges)
 
-    def technosphere(self):
+    def technosphere(self, exchanges_class=None):
+        if exchanges_class is not None:
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().technosphere(exchanges_class=ReadOnlyExchanges)
 
-    def biosphere(self):
+    def biosphere(self, exchanges_class=None):
+        if exchanges_class is not None:
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().biosphere(exchanges_class=ReadOnlyExchanges)
 
-    def production(self, include_substitution=False):
+    def production(self, include_substitution=False, exchanges_class=None):
+        if exchanges_class is not None:
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().production(
             include_substitution=include_substitution, exchanges_class=ReadOnlyExchanges
         )
 
-    def substitution(self):
+    def substitution(self, exchanges_class=None):
+        if exchanges_class is not None:
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().substitution(exchanges_class=ReadOnlyExchanges)
 
-    def upstream(self, kinds=labels.technosphere_negative_edge_types):
+    def upstream(self, kinds=labels.technosphere_negative_edge_types, exchanges_class=None):
+        if exchanges_class is not None:
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().upstream(kinds=kinds, exchanges_class=ReadOnlyExchanges)

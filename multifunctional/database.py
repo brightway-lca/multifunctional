@@ -1,13 +1,5 @@
-from bw2data import databases
 from bw2data.backends import SQLiteBackend
 from bw2data.backends.schema import ActivityDataset
-from bw_processing import (
-    Datapackage,
-    clean_datapackage_name,
-    create_datapackage,
-    load_datapackage,
-    safe_filename,
-)
 
 from .node_dispatch import multifunctional_node_dispatcher
 from .utils import add_exchange_input_if_missing, label_multifunctional_nodes
