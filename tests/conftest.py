@@ -6,8 +6,9 @@ from fixtures.basic import DATA as BASIC_DATA
 from fixtures.internal_linking import DATA as INTERNAL_LINKING_DATA
 from fixtures.product_properties import DATA as PP_DATA
 from fixtures.products import DATA as PRODUCT_DATA
+from fixtures.errors import DATA as ERRORS_DATA
 
-from multifunctional import allocation_before_writing
+from multifunctional import allocation_before_writing, MultifunctionalDatabase
 
 
 @pytest.fixture
@@ -18,8 +19,6 @@ def basic_data():
 @pytest.fixture
 @bw2test
 def basic():
-    from multifunctional import MultifunctionalDatabase
-
     db = MultifunctionalDatabase("basic")
     db.write(deepcopy(BASIC_DATA), process=False)
     db.metadata["dirty"] = True
@@ -29,8 +28,6 @@ def basic():
 @pytest.fixture
 @bw2test
 def products():
-    from multifunctional import MultifunctionalDatabase
-
     db = MultifunctionalDatabase("products")
     db.write(deepcopy(PRODUCT_DATA), process=False)
     db.metadata["dirty"] = True
@@ -39,9 +36,16 @@ def products():
 
 @pytest.fixture
 @bw2test
-def product_properties():
-    from multifunctional import MultifunctionalDatabase
+def errors():
+    db = MultifunctionalDatabase("errors")
+    db.register(default_allocation="price")
+    db.write(deepcopy(ERRORS_DATA))
+    return db
 
+
+@pytest.fixture
+@bw2test
+def product_properties():
     db = MultifunctionalDatabase("product_properties")
     db.write(deepcopy(PP_DATA), process=False)
     db.metadata["dirty"] = True
@@ -51,8 +55,6 @@ def product_properties():
 @pytest.fixture
 @bw2test
 def internal():
-    from multifunctional import MultifunctionalDatabase
-
     db = MultifunctionalDatabase("internal")
     db.register(default_allocation="price")
     db.write(

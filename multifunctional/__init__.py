@@ -1,12 +1,14 @@
 __all__ = (
     "__version__",
+    "add_custom_property_allocation_to_project",
+    "allocation_before_writing",
     "allocation_strategies",
+    "check_property_for_allocation",
+    "generic_allocation",
     "MaybeMultifunctionalProcess",
     "MultifunctionalDatabase",
-    "ReadOnlyProcessWithReferenceProduct",
     "property_allocation",
-    "allocation_before_writing",
-    "generic_allocation",
+    "ReadOnlyProcessWithReferenceProduct",
 )
 
 __version__ = "0.6"
@@ -26,6 +28,10 @@ from .database import MultifunctionalDatabase
 from .node_classes import MaybeMultifunctionalProcess, ReadOnlyProcessWithReferenceProduct
 from .node_dispatch import multifunctional_node_dispatcher
 from .utils import allocation_before_writing
+from .custom_allocation import (
+    add_custom_property_allocation_to_project,
+    check_property_for_allocation,
+)
 
 DATABASE_BACKEND_MAPPING["multifunctional"] = MultifunctionalDatabase
 NODE_PROCESS_CLASS_MAPPING["multifunctional"] = multifunctional_node_dispatcher
