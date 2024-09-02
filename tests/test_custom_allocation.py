@@ -8,6 +8,7 @@ from multifunctional import (
     add_custom_property_allocation_to_project,
     allocation_strategies,
     check_property_for_allocation,
+    list_available_properties,
 )
 from multifunctional.custom_allocation import (
     DEFAULT_ALLOCATIONS,
@@ -34,6 +35,8 @@ def test_allocation_strategies_changing_project():
 
 
 def test_check_property_for_allocation_success(basic):
+    basic.metadata['default_allocation'] = "price"
+    basic.process()
     assert check_property_for_allocation("basic", "price")
 
 
@@ -68,3 +71,24 @@ def test_check_property_for_allocation_failure(errors):
     assert len(result) == 4
     for err in result:
         assert (err.level, err.message_type, err.product_id, err.process_id) in expected
+
+
+def test_list_available_properties_basic(basic):
+    basic.metadata['default_allocation'] = "price"
+    basic.process()
+    expected = [
+        ('price', MessageType.ALL_VALID),
+        ('mass', MessageType.ALL_VALID),
+        ('manual_allocation', MessageType.ALL_VALID)
+    ]
+    for obj in list_available_properties("basic"):
+        assert obj in expected
+
+
+def test_list_available_properties_errors(errors):
+    expected = [
+        ('price', MessageType.ALL_VALID),
+        ('mass', MessageType.NONNUMERIC_PROPERTY),
+    ]
+    for obj in list_available_properties("errors"):
+        assert obj in expected

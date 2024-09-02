@@ -19,8 +19,11 @@ DEFAULT_ALLOCATIONS = set(allocation_strategies)
 class MessageType(Enum):
     NONNUMERIC_PRODUCT_PROPERTY = "Non-numeric product property"
     NONNUMERIC_EDGE_PROPERTY = "Non-numeric edge property"
+    NONNUMERIC_PROPERTY = "Non-numeric property"
     MISSING_PRODUCT_PROPERTY = "Missing product property"
     MISSING_EDGE_PROPERTY = "Missing edge property"
+    MISSING_PROPERTY = "Missing property"
+    ALL_VALID = "All properties found and have correct type"
 
 
 @dataclass
@@ -40,6 +43,48 @@ def _get_unified_properties(edge: Exchange):
     if "properties" in edge:
         properties.update(edge["properties"])
     return properties
+
+
+def list_available_properties(database_label: str):
+    """
+    Get a list of all properties in a database, and check their suitability for use.
+
+    `database_label`: String label of an existing database.
+
+    Returns a list of tuples like `(label: str, message: MessageType)`. Note that
+    `NONNUMERIC_PROPERTY` is worse than `MISSING_PROPERTY` as missing properties can be assumed to
+    be zero, but non-numeric ones break everything.
+    """
+    if database_label not in databases:
+        raise ValueError(f"Database `{database_label}` not defined in this project")
+
+    results = []
+    all_properties = set()
+
+    for ds in filter(
+        lambda x: x["type"] == "multifunctional", Database(database_label)
+    ):
+        for edge in filter(lambda x: x.get("functional"), ds.exchanges()):
+            for key in _get_unified_properties(edge):
+                all_properties.add(key)
+
+    for label in all_properties:
+        check_results = check_property_for_allocation(database_label, label)
+        if check_results is True:
+            results.append((label, MessageType.ALL_VALID))
+        elif any(
+            msg.message_type
+            in (
+                MessageType.NONNUMERIC_PRODUCT_PROPERTY,
+                MessageType.NONNUMERIC_EDGE_PROPERTY,
+            )
+            for msg in check_results
+        ):
+            results.append((label, MessageType.NONNUMERIC_PROPERTY))
+        else:
+            results.append((label, MessageType.MISSING_PROPERTY))
+
+    return results
 
 
 def check_property_for_allocation(

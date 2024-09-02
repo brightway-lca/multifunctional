@@ -5,6 +5,7 @@ __all__ = (
     "allocation_strategies",
     "check_property_for_allocation",
     "generic_allocation",
+    "list_available_properties",
     "MaybeMultifunctionalProcess",
     "MultifunctionalDatabase",
     "property_allocation",
@@ -30,6 +31,7 @@ from .node_dispatch import multifunctional_node_dispatcher
 from .utils import allocation_before_writing
 from .custom_allocation import (
     add_custom_property_allocation_to_project,
+    list_available_properties,
     check_property_for_allocation,
 )
 
