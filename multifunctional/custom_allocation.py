@@ -151,7 +151,7 @@ f"""Functional edge is missing a property value for `{property_label}`.
                 )
             elif (
                 not isinstance(properties[property_label], Number)
-                or properties[property_label] in (True, False)
+                or isinstance(properties[property_label], bool)
                 and edge.input["type"] != "readonly_process"
             ):
                 messages.append(
@@ -170,9 +170,9 @@ f"""Found non-numeric value `{properties[property_label]}` in property `{propert
 """,
                     )
                 )
-            elif not isinstance(properties[property_label], Number) or properties[
-                property_label
-            ] in (True, False):
+            elif not isinstance(properties[property_label], Number) or isinstance(
+                properties[property_label], bool
+            ):
                 messages.append(
                     PropertyMessage(
                         level=logging.CRITICAL,

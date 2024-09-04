@@ -5,7 +5,7 @@ DATA = {
         "type": "product",
         "properties": {
             "price": 7.7,
-        }
+        },
     },
     ("errors", "b"): {
         "name": "product b",
@@ -14,7 +14,7 @@ DATA = {
         "properties": {
             "price": 8.1,
             "mass": True,
-        }
+        },
     },
     ("errors", "c"): {
         "name": "product c",
@@ -23,7 +23,7 @@ DATA = {
         "properties": {
             "price": 7,
             "mass": 8,
-        }
+        },
     },
     ("errors", "1"): {
         "name": "process - 1",
