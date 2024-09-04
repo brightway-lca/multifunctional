@@ -108,7 +108,9 @@ def check_basic_allocation_results(factor_1, factor_2, database):
 
 
 def test_without_allocation(allocate_then_write):
-    nodes = sorted(allocate_then_write, key=lambda x: (x["name"], x.get("reference product", "")))
+    nodes = sorted(
+        allocate_then_write, key=lambda x: (x["name"], x.get("reference product", ""))
+    )
     assert len(nodes) == 4
 
     assert isinstance(nodes[0], mf.MaybeMultifunctionalProcess)
@@ -130,7 +132,9 @@ def test_without_allocation(allocate_then_write):
 def test_price_allocation_strategy_label(allocate_then_write):
     allocate_then_write.metadata["default_allocation"] = "price"
     bd.get_node(code="1").allocate()
-    nodes = sorted(allocate_then_write, key=lambda x: (x["name"], x.get("reference product", "")))
+    nodes = sorted(
+        allocate_then_write, key=lambda x: (x["name"], x.get("reference product", ""))
+    )
 
     assert not nodes[0].get("mf_strategy_label")
     assert nodes[1].get("mf_strategy_label") == "property allocation by 'price'"
@@ -173,7 +177,9 @@ def test_allocation_uses_existing(allocate_then_write):
 def test_allocation_already_allocated(allocate_then_write):
     allocate_then_write.metadata["default_allocation"] = "price"
     bd.get_node(code="1").allocate()
-    node = sorted(allocate_then_write, key=lambda x: (x["name"], x.get("reference product", "")))[2]
+    node = sorted(
+        allocate_then_write, key=lambda x: (x["name"], x.get("reference product", ""))
+    )[2]
 
     assert mf.generic_allocation(node, None) == []
 
