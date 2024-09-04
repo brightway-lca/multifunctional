@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.1] - 2024-09-04
+
+* Packaging fix
+
 ## [0.7] - 2024-09-04
 
 * [# 21: Add custom allocation functions and validation](https://github.com/brightway-lca/multifunctional/pull/21)
