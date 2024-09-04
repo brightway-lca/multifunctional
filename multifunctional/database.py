@@ -5,7 +5,9 @@ from .node_dispatch import multifunctional_node_dispatcher
 from .utils import add_exchange_input_if_missing, label_multifunctional_nodes
 
 
-def multifunctional_dispatcher_method(db: "MultifunctionalDatabase", document: ActivityDataset):
+def multifunctional_dispatcher_method(
+    db: "MultifunctionalDatabase", document: ActivityDataset
+):
     return multifunctional_node_dispatcher(document)
 
 
