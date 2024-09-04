@@ -48,7 +48,7 @@ def test_allocation_sets_code_for_zero_allocation_products_in_multifunctional_pr
                 },
                 {
                     "name": "🐑",
-                    'mf_allocation_factor': 1.0,
+                    "mf_allocation_factor": 1.0,
                     "unit": "kg",
                     "waste_type": "not defined",
                     "amount": 1.0,
@@ -64,7 +64,7 @@ def test_allocation_sets_code_for_zero_allocation_products_in_multifunctional_pr
                 },
                 {
                     "name": "🐣",
-                    'mf_allocation_factor': 0.0,
+                    "mf_allocation_factor": 0.0,
                     "unit": "kg",
                     "amount": 0.1,
                     "allocation": 0.0,
