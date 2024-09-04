@@ -120,13 +120,14 @@ def check_property_for_allocation(
                         process_id=ds.id,
                         product_id=edge.input.id,
                         message_type=MessageType.MISSING_PRODUCT_PROPERTY,
-                        message=f"""
-Product is missing a property value for `{property_label}`.
-Missing values are treated as zeros.
-Please define this property for the product:
-{edge.input}
-Referenced by multifunctional process:
-{ds}
+                        message=
+f"""Product is missing a property value for `{property_label}`.
+    Missing values are treated as zeros.
+    Please define this property for the product:
+        {edge.input}
+    Referenced by multifunctional process:
+        {ds}
+
 """,
                     )
                 )
@@ -137,13 +138,14 @@ Referenced by multifunctional process:
                         process_id=ds.id,
                         product_id=edge.input.id,
                         message_type=MessageType.MISSING_EDGE_PROPERTY,
-                        message=f"""
-Functional edge is missing a property value for `{property_label}`.
-Missing values are treated as zeros.
-Please define this property for the edge:
-{edge}
-Found in multifunctional process:
-{ds}
+                        message=
+f"""Functional edge is missing a property value for `{property_label}`.
+    Missing values are treated as zeros.
+    Please define this property for the edge:
+        {edge}
+    Found in multifunctional process:
+        {ds}
+
 """,
                     )
                 )
@@ -158,12 +160,13 @@ Found in multifunctional process:
                         process_id=ds.id,
                         product_id=edge.input.id,
                         message_type=MessageType.NONNUMERIC_PRODUCT_PROPERTY,
-                        message=f"""
-Found non-numeric value `{properties[property_label]}` in property `{property_label}`.
-Please redefine this property for the product:
-{edge.input}
-Referenced by multifunctional process:
-{ds}
+                        message=
+f"""Found non-numeric value `{properties[property_label]}` in property `{property_label}`.
+    Please redefine this property for the product:
+        {edge.input}
+    Referenced by multifunctional process:
+        {ds}
+
 """,
                     )
                 )
@@ -176,12 +179,13 @@ Referenced by multifunctional process:
                         process_id=ds.id,
                         product_id=edge.input.id,
                         message_type=MessageType.NONNUMERIC_EDGE_PROPERTY,
-                        message=f"""
-Found non-numeric value `{properties[property_label]}` in property `{property_label}`.
-Please redefine this property for the edge:
-{edge}
-Found in multifunctional process:
-{ds}
+                        message=
+f"""Found non-numeric value `{properties[property_label]}` in property `{property_label}`.
+    Please redefine this property for the edge:
+        {edge}
+    Found in multifunctional process:
+        {ds}
+
 """,
                     )
                 )
