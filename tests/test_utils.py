@@ -101,7 +101,10 @@ def test_product_as_process_name():
     expected = [
         {"exchanges": [{"functional": True}, {"functional": True}]},
         {"exchanges": [{"functional": True}]},
-        {"name": "night train", "exchanges": [{"functional": True, "name": "night train"}]},
+        {
+            "name": "night train",
+            "exchanges": [{"functional": True, "name": "night train"}],
+        },
         {"exchanges": []},
     ]
     product_as_process_name(given)

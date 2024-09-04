@@ -29,9 +29,10 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-    "bw2data>=4.0.dev45",
-    "bw2io>=0.9.dev28",
-    "bw_processing>=0.9.5",
+    "blinker",
+    "bw2data>=4.0.dev52",
+    "bw2io>=0.9.dev35",
+    "bw_processing>=0.9.6",
     "numpy<2",
     "loguru",
 ]

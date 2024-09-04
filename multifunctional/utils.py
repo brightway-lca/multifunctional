@@ -8,7 +8,9 @@ from bw2data.errors import UnknownObject
 from loguru import logger
 
 
-def allocation_before_writing(data: Dict[tuple, dict], strategy_label: str) -> Dict[tuple, dict]:
+def allocation_before_writing(
+    data: Dict[tuple, dict], strategy_label: str
+) -> Dict[tuple, dict]:
     """Utility to perform allocation on datasets and expand `data` with allocated processes."""
     from . import allocation_strategies
 
