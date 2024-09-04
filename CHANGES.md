@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7] - 2024-09-04
+
+* [# 21: Add custom allocation functions and validation](https://github.com/brightway-lca/multifunctional/pull/21)
+
 ## [0.6] - 2024-08-21
 
 * Fix [#19: Store default allocation value and function string on mutifunctional processes](https://github.com/brightway-lca/multifunctional/issues/19)
