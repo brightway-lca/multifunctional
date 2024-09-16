@@ -13,7 +13,7 @@ __all__ = (
     "ReadOnlyProcessWithReferenceProduct",
 )
 
-__version__ = "0.7.1"
+__version__ = "0.7.2"
 
 # Follows guidance from https://loguru.readthedocs.io/en/stable/resources/recipes.html#configuring-loguru-to-be-used-by-a-library-or-an-application
 # For development or to get more detail on what is really happening, re-enable with:
