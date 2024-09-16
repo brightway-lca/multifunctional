@@ -4,6 +4,7 @@ __all__ = (
     "allocation_before_writing",
     "allocation_strategies",
     "check_property_for_allocation",
+    "check_property_for_process_allocation",
     "generic_allocation",
     "list_available_properties",
     "MaybeMultifunctionalProcess",
@@ -37,8 +38,9 @@ from .node_dispatch import multifunctional_node_dispatcher
 from .utils import allocation_before_writing
 from .custom_allocation import (
     add_custom_property_allocation_to_project,
-    list_available_properties,
     check_property_for_allocation,
+    check_property_for_process_allocation,
+    list_available_properties,
 )
 
 DATABASE_BACKEND_MAPPING["multifunctional"] = MultifunctionalDatabase

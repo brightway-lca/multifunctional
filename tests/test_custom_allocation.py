@@ -8,6 +8,7 @@ from multifunctional import (
     add_custom_property_allocation_to_project,
     allocation_strategies,
     check_property_for_allocation,
+    check_property_for_process_allocation,
     list_available_properties,
     MultifunctionalDatabase,
 )
@@ -72,6 +73,47 @@ def test_check_property_for_allocation_failure(errors):
     assert len(result) == 4
     for err in result:
         assert (err.level, err.message_type, err.product_id, err.process_id) in expected
+
+
+def test_check_process_property_for_allocation_failure(errors):
+    msg_list = []
+    check_property_for_process_allocation(get_node(code="1"), "mass", msg_list)
+    expected = {
+        (
+            logging.WARNING,
+            MessageType.MISSING_PRODUCT_PROPERTY,
+            get_node(code="a").id,
+            get_node(code="1").id,
+        ),
+        (
+            logging.CRITICAL,
+            MessageType.NONNUMERIC_PRODUCT_PROPERTY,
+            get_node(code="b").id,
+            get_node(code="1").id,
+        ),
+        (
+            logging.CRITICAL,
+            MessageType.NONNUMERIC_EDGE_PROPERTY,
+            get_node(code="first one here").id,
+            get_node(code="1").id,
+        ),
+        (
+            logging.WARNING,
+            MessageType.MISSING_EDGE_PROPERTY,
+            get_node(code="second one here").id,
+            get_node(code="1").id,
+        ),
+    }
+    assert len(msg_list) == 4
+    for err in msg_list:
+        assert (err.level, err.message_type, err.product_id, err.process_id) in expected
+
+
+def test_check_process_property_for_allocation_failure_process_type(errors):
+    msg_list = []
+    result = check_property_for_process_allocation(get_node(code="a"), "mass", msg_list)
+    assert result is True
+    assert not msg_list
 
 
 @bw2test

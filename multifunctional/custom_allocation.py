@@ -3,11 +3,11 @@ from copy import copy
 from dataclasses import dataclass
 from enum import Enum
 from numbers import Number
-from typing import List, Union
+from typing import List, Union, Optional
 
 from blinker import signal
 from bw2data import Database, databases
-from bw2data.backends import Exchange
+from bw2data.backends import Exchange, Node
 from bw2data.project import ProjectDataset, projects
 
 from . import allocation_strategies
@@ -87,6 +87,106 @@ def list_available_properties(database_label: str):
     return results
 
 
+def check_property_for_process_allocation(
+    process: Node, property_label: str, messages: Optional[List[PropertyMessage]] = None
+) -> Union[bool, List[PropertyMessage]]:
+    """
+    Check that the given property is present for all functional edges in a given process.
+
+    `process`: Multifunctional process `Node`.
+    `property_label`: String label of the property to be used for allocation.
+
+    If all the needed data is present, returns `True`.
+
+    If there is missing data, returns a list of `PropertyMessage` objects.
+    """
+    if messages is None:
+        messages = []
+
+    if process['type'] != "multifunctional":
+        return True
+
+    for edge in filter(lambda x: x.get("functional"), process.exchanges()):
+        properties = _get_unified_properties(edge)
+        if (
+            property_label not in properties
+            and edge.input["type"] != "readonly_process"
+        ):
+            messages.append(
+                PropertyMessage(
+                    level=logging.WARNING,
+                    process_id=process.id,
+                    product_id=edge.input.id,
+                    message_type=MessageType.MISSING_PRODUCT_PROPERTY,
+                    message=f"""Product is missing a property value for `{property_label}`.
+Missing values are treated as zeros.
+Please define this property for the product:
+    {edge.input}
+Referenced by multifunctional process:
+    {process}
+
+""",
+                )
+            )
+        elif property_label not in properties:
+            messages.append(
+                PropertyMessage(
+                    level=logging.WARNING,
+                    process_id=process.id,
+                    product_id=edge.input.id,
+                    message_type=MessageType.MISSING_EDGE_PROPERTY,
+                    message=f"""Functional edge is missing a property value for `{property_label}`.
+Missing values are treated as zeros.
+Please define this property for the edge:
+    {edge}
+Found in multifunctional process:
+    {process}
+
+""",
+                )
+            )
+        elif (
+            not isinstance(properties[property_label], Number)
+            or isinstance(properties[property_label], bool)
+            and edge.input["type"] != "readonly_process"
+        ):
+            messages.append(
+                PropertyMessage(
+                    level=logging.CRITICAL,
+                    process_id=process.id,
+                    product_id=edge.input.id,
+                    message_type=MessageType.NONNUMERIC_PRODUCT_PROPERTY,
+                    message=f"""Found non-numeric value `{properties[property_label]}` in property `{property_label}`.
+Please redefine this property for the product:
+    {edge.input}
+Referenced by multifunctional process:
+    {process}
+
+""",
+                )
+            )
+        elif not isinstance(properties[property_label], Number) or isinstance(
+            properties[property_label], bool
+        ):
+            messages.append(
+                PropertyMessage(
+                    level=logging.CRITICAL,
+                    process_id=process.id,
+                    product_id=edge.input.id,
+                    message_type=MessageType.NONNUMERIC_EDGE_PROPERTY,
+                    message=f"""Found non-numeric value `{properties[property_label]}` in property `{property_label}`.
+Please redefine this property for the edge:
+    {edge}
+Found in multifunctional process:
+    {process}
+
+""",
+                )
+            )
+
+    return messages or True
+
+
 def check_property_for_allocation(
     database_label: str, property_label: str
 ) -> Union[bool, List[PropertyMessage]]:
@@ -108,90 +208,8 @@ def check_property_for_allocation(
     messages = []
 
     for ds in filter(lambda x: x["type"] == "multifunctional", db):
-        for edge in filter(lambda x: x.get("functional"), ds.exchanges()):
-            properties = _get_unified_properties(edge)
-            if (
-                property_label not in properties
-                and edge.input["type"] != "readonly_process"
-            ):
-                messages.append(
-                    PropertyMessage(
-                        level=logging.WARNING,
-                        process_id=ds.id,
-                        product_id=edge.input.id,
-                        message_type=MessageType.MISSING_PRODUCT_PROPERTY,
-                        message=f"""Product is missing a property value for `{property_label}`.
-    Missing values are treated as zeros.
-    Please define this property for the product:
-        {edge.input}
-    Referenced by multifunctional process:
-        {ds}
+        check_property_for_process_allocation(ds, property_label, messages)
 
-""",
-                    )
-                )
-            elif property_label not in properties:
-                messages.append(
-                    PropertyMessage(
-                        level=logging.WARNING,
-                        process_id=ds.id,
-                        product_id=edge.input.id,
-                        message_type=MessageType.MISSING_EDGE_PROPERTY,
-                        message=f"""Functional edge is missing a property value for `{property_label}`.
-    Missing values are treated as zeros.
-    Please define this property for the edge:
-        {edge}
-    Found in multifunctional process:
-        {ds}
-
-""",
-                    )
-                )
-            elif (
-                not isinstance(properties[property_label], Number)
-                or isinstance(properties[property_label], bool)
-                and edge.input["type"] != "readonly_process"
-            ):
-                messages.append(
-                    PropertyMessage(
-                        level=logging.CRITICAL,
-                        process_id=ds.id,
-                        product_id=edge.input.id,
-                        message_type=MessageType.NONNUMERIC_PRODUCT_PROPERTY,
-                        message=f"""Found non-numeric value `{properties[property_label]}` in property `{property_label}`.
-    Please redefine this property for the product:
-        {edge.input}
-    Referenced by multifunctional process:
-        {ds}
-
-""",
-                    )
-                )
-            elif not isinstance(properties[property_label], Number) or isinstance(
-                properties[property_label], bool
-            ):
-                messages.append(
-                    PropertyMessage(
-                        level=logging.CRITICAL,
-                        process_id=ds.id,
-                        product_id=edge.input.id,
-                        message_type=MessageType.NONNUMERIC_EDGE_PROPERTY,
-                        message=f"""Found non-numeric value `{properties[property_label]}` in property `{property_label}`.
-    Please redefine this property for the edge:
-        {edge}
-    Found in multifunctional process:
-        {ds}
-
-""",
-                    )
-                )
-            else:
-                print(
-                    "No problem with:",
-                    properties,
-                    property_label,
-                    isinstance(properties[property_label], Number),
-                )
     return messages or True
 
 
