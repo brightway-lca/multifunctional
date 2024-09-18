@@ -193,3 +193,30 @@ def test_list_available_properties_errors(errors):
     ]
     for obj in list_available_properties("errors"):
         assert obj in expected
+
+
+def test_list_available_properties_for_process_basic(basic):
+    basic.metadata["default_allocation"] = "price"
+    basic.process()
+    expected = [
+        ("price", MessageType.ALL_VALID),
+        ("mass", MessageType.ALL_VALID),
+        ("manual_allocation", MessageType.ALL_VALID),
+    ]
+    for obj in list_available_properties("basic", get_node(code="1")):
+        assert obj in expected
+
+
+def test_list_available_properties_for_process_errors(errors):
+    expected_1 = [
+        ("price", MessageType.ALL_VALID),
+        ("mass", MessageType.NONNUMERIC_PROPERTY),
+    ]
+    for obj in list_available_properties("errors", get_node(code="1")):
+        assert obj in expected_1
+    expected_3 = [
+        ("price", MessageType.ALL_VALID),
+        ("mass", MessageType.ALL_VALID),
+    ]
+    for obj in list_available_properties("errors", get_node(code="3")):
+        assert obj in expected_3
