@@ -83,4 +83,33 @@ DATA = {
         "type": "emission",
         "categories": ("air",),
     },
+    ("errors", "3"): {
+        "name": "process - 1",
+        "type": "multifunctional",
+        "exchanges": [
+            {
+                "functional": True,
+                "type": "production",
+                "input": ("errors", "c"),
+                "amount": 4,
+            },
+            {
+                "functional": True,
+                "type": "production",
+                "desired_code": "first one here",
+                "name": "first product - 1.1",
+                "unit": "kg",
+                "amount": 4,
+                "properties": {
+                    "price": 7,
+                    "mass": 9,
+                },
+            },
+            {
+                "type": "biosphere",
+                "amount": 12,
+                "input": ("errors", "2"),
+            },
+        ],
+    },
 }

@@ -45,11 +45,13 @@ def _get_unified_properties(edge: Exchange):
     return properties
 
 
-def list_available_properties(database_label: str):
+def list_available_properties(database_label: str, target_process: Optional[Node] = None):
     """
     Get a list of all properties in a database, and check their suitability for use.
 
     `database_label`: String label of an existing database.
+    `target_process`: Optional. If provided, property checks are done only for this process.
+                      If not provided, checks are done for the whole database.
 
     Returns a list of tuples like `(label: str, message: MessageType)`. Note that
     `NONNUMERIC_PROPERTY` is worse than `MISSING_PROPERTY` as missing properties can be assumed to
@@ -57,6 +59,8 @@ def list_available_properties(database_label: str):
     """
     if database_label not in databases:
         raise ValueError(f"Database `{database_label}` not defined in this project")
+    if target_process is not None and target_process.get("database") != database_label:
+        raise ValueError(f"Target process must be also in database `{database_label}`")
 
     results = []
     all_properties = set()
@@ -69,7 +73,10 @@ def list_available_properties(database_label: str):
                 all_properties.add(key)
 
     for label in all_properties:
-        check_results = check_property_for_allocation(database_label, label)
+        if target_process is None:
+            check_results = check_property_for_allocation(database_label, label)
+        else:
+            check_results = check_property_for_process_allocation(target_process, label)
         if check_results is True:
             results.append((label, MessageType.ALL_VALID))
         elif any(
