@@ -1,5 +1,6 @@
-import bw2data as bd
 from loguru import logger
+import bw2data as bd
+import pytest
 
 from multifunctional.utils import (
     add_exchange_input_if_missing,
@@ -9,7 +10,14 @@ from multifunctional.utils import (
 )
 
 
-def test_add_exchange_input_if_missing(caplog):
+@pytest.fixture
+def logguru_caplog(caplog):
+    handler_id = logger.add(caplog.handler, format="{message}")
+    yield caplog
+    logger.remove(handler_id)
+
+
+def test_add_exchange_input_if_missing(logguru_caplog):
     logger.enable("multifunctional")
 
     given = {
@@ -71,7 +79,7 @@ def test_add_exchange_input_if_missing(caplog):
         },
     }
     assert add_exchange_input_if_missing(given) == expected
-    assert "given 'code' is 'bar' but 'input' code is 'foo'" in caplog.text
+    assert "given 'code' is 'bar' but 'input' code is 'foo'" in logguru_caplog.text
 
 
 def test_label_multifunctional_nodes():
