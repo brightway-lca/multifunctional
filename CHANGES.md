@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8] - 2024-09-27
+
+Still provide allocated processes when allocation factors are zero, as some database uses these zero-burden products
+
 ## [0.7.2] - 2024-09-16
 
 Add `check_property_for_process_allocation` function
