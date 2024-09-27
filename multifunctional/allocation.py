@@ -31,7 +31,7 @@ def generic_allocation(
     Allocation amount is edge amount times function(edge_data, act) divided by sum of all edge
     amounts times function(edge_data, act).
 
-    Skips functional edges with zero allocation values."""
+    **No longer** skips functional edges with zero allocation values."""
     if isinstance(act, Activity):
         act_data = act._data
         act_data["exchanges"] = [exc._data for exc in act.exchanges()]
@@ -70,13 +70,13 @@ def generic_allocation(
                 del original_exc["properties"][key]
             del original_exc["__mf__properties_from_product"]
 
-        if not factor:
-            # Functional product of multifunctional process, but with allocation factor of zero
-            # We need to link to *something*, so link to original multifunctional process to avoid
-            # unlinked exchanges
-            if not original_exc.get("input"):
-                original_exc["input"] = (act["database"], act["code"])
-            continue
+        # if not factor:
+        #     # Functional product of multifunctional process, but with allocation factor of zero
+        #     # We need to link to *something*, so link to original multifunctional process to avoid
+        #     # unlinked exchanges
+        #     if not original_exc.get("input"):
+        #         original_exc["input"] = (act["database"], act["code"])
+        #     continue
 
         logger.debug(
             "Using allocation factor {f} for functional edge {e} on activity {a}",

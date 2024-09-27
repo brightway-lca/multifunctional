@@ -1,5 +1,7 @@
 import bw2data as bd
+from bw2data.tests import bw2test
 
+from multifunctional import MultifunctionalDatabase
 from multifunctional.allocation import generic_allocation
 from multifunctional.node_classes import (
     MaybeMultifunctionalProcess,
@@ -178,3 +180,70 @@ def test_allocation_already_allocated(basic):
 
 def test_allocation_not_multifunctional(basic):
     assert generic_allocation(bd.get_node(code="a"), None) == []
+
+
+@bw2test
+def test_allocation_zero_factor_still_gives_process():
+    DATA = {
+        ("basic", "a"): {
+            "name": "flow - a",
+            "code": "a",
+            "unit": "kg",
+            "type": "emission",
+            "categories": ("air",),
+        },
+        ("basic", "1"): {
+            "name": "process - 1",
+            "code": "1",
+            "location": "first",
+            "type": "multifunctional",
+            "exchanges": [
+                {
+                    "functional": True,
+                    "type": "production",
+                    "desired_code": "my favorite code",
+                    "name": "first product - 1",
+                    "unit": "kg",
+                    "amount": 4,
+                    "properties": {
+                        "price": 7,
+                        "mass": 6,
+                        "manual_allocation": 2,
+                    },
+                },
+                {
+                    "functional": True,
+                    "type": "production",
+                    "name": "second product - 1",
+                    "unit": "megajoule",
+                    "amount": 6,
+                    "properties": {
+                        "price": 0,
+                        "mass": 4,
+                        "manual_allocation": 8,
+                    },
+                },
+                {
+                    "type": "biosphere",
+                    "name": "flow - a",
+                    "amount": 10,
+                    "input": ("basic", "a"),
+                },
+            ],
+        },
+    }
+
+    db = MultifunctionalDatabase("basic")
+    db.register(default_allocation="price")
+    db.write(DATA)
+
+    for node in db:
+        print(node)
+        for exc in node.edges():
+            print("\t", exc)
+
+    assert bd.get_node(name="process - 1", unit="megajoule")
+    assert (bd.get_node(name="flow - a"), 0) in [
+        (exc.input, exc["amount"])
+        for exc in bd.get_node(name="process - 1", unit="megajoule").edges()
+    ]
