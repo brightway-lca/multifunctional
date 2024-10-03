@@ -1,3 +1,5 @@
+from typing import Optional
+
 from bw2data.backends import SQLiteBackend
 from bw2data.backends.schema import ActivityDataset
 
@@ -6,7 +8,7 @@ from .utils import add_exchange_input_if_missing, label_multifunctional_nodes
 
 
 def multifunctional_dispatcher_method(
-    db: "MultifunctionalDatabase", document: ActivityDataset
+    db: "MultifunctionalDatabase", document: Optional[ActivityDataset] = None
 ):
     return multifunctional_node_dispatcher(document)
 

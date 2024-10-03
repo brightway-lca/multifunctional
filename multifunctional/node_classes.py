@@ -30,8 +30,10 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
     def save(self):
         if self.multifunctional:
             self._data["type"] = "multifunctional"
-        else:
-            self._data["type"] = "process"
+        elif not self._data.get("type"):
+            # TBD: This should use bw2data.utils.set_correct_process_type
+            # but that wants datasets as dicts with exchanges
+            self._data["type"] = labels.process_node_default
         super().save()
 
     def __str__(self):
