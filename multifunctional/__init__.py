@@ -50,4 +50,4 @@ NODE_PROCESS_CLASS_MAPPING["multifunctional"] = multifunctional_node_dispatcher
 if "readonly_process" not in labels.process_node_types:
     labels.process_node_types.append("readonly_process")
 if "readonly_process" not in labels.node_types:
-    labels.node_types.append("readonly_process")
+    labels.lci_node_types.append("readonly_process")
