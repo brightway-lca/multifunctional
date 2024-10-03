@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.1] - 2024-10-03
+
+* Fix errors with manual node creation
+* Update for `bw2data` 4.0.dev57
+
 ## [0.8] - 2024-09-27
 
 Still provide allocated processes when allocation factors are zero, as some database uses these zero-burden products
