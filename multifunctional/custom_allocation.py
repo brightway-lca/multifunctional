@@ -126,7 +126,6 @@ def check_property_for_process_allocation(
                     product_id=edge.input.id,
                     message_type=MessageType.MISSING_PRODUCT_PROPERTY,
                     message=f"""Product is missing a property value for `{property_label}`.
-Missing values are treated as zeros.
 Please define this property for the product:
     {edge.input}
 Referenced by multifunctional process:
@@ -143,7 +142,6 @@ Referenced by multifunctional process:
                     product_id=edge.input.id,
                     message_type=MessageType.MISSING_EDGE_PROPERTY,
                     message=f"""Functional edge is missing a property value for `{property_label}`.
-Missing values are treated as zeros.
 Please define this property for the edge:
     {edge}
 Found in multifunctional process:
