@@ -51,6 +51,7 @@ def generic_allocation(
     if not total:
         raise ZeroDivisionError("Sum of allocation factors is zero")
 
+    act["mf_allocation_run_uuid"] = uuid4().hex
     processes = [act]
 
     for original_exc in filter(lambda x: x.get("functional"), act.get("exchanges", [])):
@@ -145,6 +146,9 @@ def generic_allocation(
             )
 
         processes.append(allocated_process)
+
+    # Useful for other functions like purging expired links in future
+    act["mf_was_once_allocated"] = True
 
     return processes
 

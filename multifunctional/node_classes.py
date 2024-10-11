@@ -9,6 +9,7 @@ from .edge_classes import ReadOnlyExchanges
 from .errors import NoAllocationNeeded
 from .utils import (
     product_as_process_name,
+    purge_expired_linked_readonly_processes,
     set_correct_process_type,
     update_datasets_from_allocation_results,
 )
@@ -32,12 +33,8 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
     Sets flag on save if multifunctional."""
 
     def save(self):
-        if self.multifunctional:
-            self._data["type"] = "multifunctional"
-        elif not self._data.get("type"):
-            # TBD: This should use bw2data.utils.set_correct_process_type
-            # but that wants datasets as dicts with exchanges
-            self._data["type"] = labels.process_node_default
+        set_correct_process_type(self)
+        purge_expired_linked_readonly_processes(self)
         super().save()
 
     def __str__(self):
@@ -52,6 +49,8 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
         if self.get("skip_allocation"):
             return NoAllocationNeeded
         if not self.multifunctional:
+            # Call save because we don't know if the process type should be changed
+            self.save()
             return NoAllocationNeeded
 
         from . import allocation_strategies
@@ -117,11 +116,6 @@ class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):
         )
 
     def new_edge(self, **kwargs):
-        raise NotImplementedError(
-            "This node is read only. Update the corresponding multifunctional process."
-        )
-
-    def delete(self):
         raise NotImplementedError(
             "This node is read only. Update the corresponding multifunctional process."
         )

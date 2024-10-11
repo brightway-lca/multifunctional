@@ -11,10 +11,6 @@ def test_read_only_node(basic):
     assert isinstance(node, mf.ReadOnlyProcessWithReferenceProduct)
 
     with pytest.raises(NotImplementedError) as info:
-        node.delete()
-    assert "This node is read only" in info.value.args[0]
-
-    with pytest.raises(NotImplementedError) as info:
         node.copy()
     assert "This node is read only" in info.value.args[0]
 
@@ -43,10 +39,6 @@ def test_read_only_exchanges(basic):
         assert "Read-only exchange" in info.value.args[0]
 
         with pytest.raises(NotImplementedError) as info:
-            exc.delete()
-        assert "Read-only exchange" in info.value.args[0]
-
-        with pytest.raises(NotImplementedError) as info:
             exc["foo"] = "bar"
         assert "Read-only exchange" in info.value.args[0]
 
@@ -57,10 +49,6 @@ def test_read_only_exchanges(basic):
         # with pytest.raises(NotImplementedError) as info:
         #     exc.output = node
         # assert 'Read-only exchange' in info.value.args[0]
-
-    with pytest.raises(NotImplementedError) as info:
-        node.exchanges().delete()
-    assert "Exchanges are read-only" in info.value.args[0]
 
 
 def test_read_only_parent(basic):

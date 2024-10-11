@@ -19,9 +19,6 @@ class ReadOnlyExchange(Exchange):
 
 
 class ReadOnlyExchanges(Exchanges):
-    def delete(self):
-        raise NotImplementedError("Exchanges are read-only")
-
     def __iter__(self):
         for obj in self._get_queryset():
             yield ReadOnlyExchange(obj)

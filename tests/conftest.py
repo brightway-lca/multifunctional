@@ -7,6 +7,7 @@ from fixtures.errors import DATA as ERRORS_DATA
 from fixtures.internal_linking import DATA as INTERNAL_LINKING_DATA
 from fixtures.product_properties import DATA as PP_DATA
 from fixtures.products import DATA as PRODUCT_DATA
+from fixtures.many_products import DATA as MANY_PRODUCTS_DATA
 
 from multifunctional import MultifunctionalDatabase, allocation_before_writing
 
@@ -30,6 +31,15 @@ def basic():
 def products():
     db = MultifunctionalDatabase("products")
     db.write(deepcopy(PRODUCT_DATA), process=False)
+    db.metadata["dirty"] = True
+    return db
+
+
+@pytest.fixture
+@bw2test
+def many_products():
+    db = MultifunctionalDatabase("products")
+    db.write(deepcopy(MANY_PRODUCTS_DATA), process=False)
     db.metadata["dirty"] = True
     return db
 

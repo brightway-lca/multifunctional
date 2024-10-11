@@ -1,16 +1,17 @@
+from collections import Counter
 from pprint import pformat
 from typing import Dict, List
 
-from bw2data import get_node
-from bw2data.backends import Exchange
+from bw2data import get_node, labels
+from bw2data.backends import Exchange, Node
 from bw2data.backends.schema import ExchangeDataset
 from bw2data.errors import UnknownObject
 from loguru import logger
 
+from multifunctional.errors import MultipleFunctionalExchangesWithSameInput
 
-def allocation_before_writing(
-    data: Dict[tuple, dict], strategy_label: str
-) -> Dict[tuple, dict]:
+
+def allocation_before_writing(data: Dict[tuple, dict], strategy_label: str) -> Dict[tuple, dict]:
     """Utility to perform allocation on datasets and expand `data` with allocated processes."""
     from . import allocation_strategies
 
@@ -62,7 +63,7 @@ def add_exchange_input_if_missing(data: dict) -> dict:
 
 
 def update_datasets_from_allocation_results(data: List[dict]) -> None:
-    """Given data from allocation, create or update datasets as needed from `data`."""
+    """Given data from allocation, create, update, or delete datasets as needed from `data`."""
     from .node_classes import ReadOnlyProcessWithReferenceProduct
 
     for ds in data:
@@ -98,3 +99,121 @@ def product_as_process_name(data: List[dict]) -> None:
         functional_excs = [exc for exc in ds["exchanges"] if exc.get("functional")]
         if len(functional_excs) == 1 and functional_excs[0].get("name"):
             ds["name"] = functional_excs[0]["name"]
+
+
+def set_correct_process_type(dataset: Node) -> Node:
+    """
+    Change the `type` for an LCI process under certain conditions.
+
+    Only will make changes if the following conditions are met:
+
+    * `type` is `multifunctional` but the dataset is no longer multifunctional ->
+        set to either `process` or `processwithreferenceproduct`
+    * `type` is `None` or missing -> set to either `process` or `processwithreferenceproduct`
+    * `type` is `process` but the dataset also includes an exchange which points to the same node
+        -> `processwithreferenceproduct`
+
+    """
+    if dataset.get("type") not in (
+        labels.chimaera_node_default,
+        labels.process_node_default,
+        "multifunctional",
+        None,
+    ):
+        pass
+    elif dataset.multifunctional:
+        dataset["type"] = "multifunctional"
+    elif any(exc.input == exc.output for exc in dataset.exchanges()):
+        if dataset["type"] == "multifunctional":
+            logger.debug(
+                "Changed %s (%s) type from `multifunctional` to `%s`",
+                dataset.get("name"),
+                dataset.id,
+                labels.chimaera_node_default,
+            )
+        dataset["type"] = labels.chimaera_node_default
+    elif any(exc.get("functional") for exc in dataset.exchanges()):
+        if dataset["type"] == "multifunctional":
+            logger.debug(
+                "Changed %s (%s) type from `multifunctional` to `%s`",
+                dataset.get("name"),
+                dataset.id,
+                labels.process_node_default,
+            )
+        dataset["type"] = labels.process_node_default
+    elif (
+        # No production edges -> implicit self production -> chimaera
+        not any(
+            exc.get("type") in labels.technosphere_positive_edge_types
+            for exc in dataset.exchanges()
+        )
+    ):
+        dataset["type"] = labels.chimaera_node_default
+    elif not dataset.get("type"):
+        dataset["type"] = labels.process_node_default
+    else:
+        # No conditions for setting or changing type occurred
+        pass
+
+    return dataset
+
+
+def purge_expired_linked_readonly_processes(dataset: Node) -> None:
+    from .database import MultifunctionalDatabase
+
+    if not dataset.get("mf_was_once_allocated"):
+        return
+
+    if dataset["type"] == "multifunctional":
+        # Can have some readonly allocated processes which refer to non-functional edges
+        for ds in MultifunctionalDatabase(dataset["database"]):
+            if (
+                ds["type"] in ("readonly_process",)
+                and ds.get("mf_parent_key") == dataset.key
+                and ds["mf_allocation_run_uuid"] != dataset["mf_allocation_run_uuid"]
+            ):
+                ds.delete()
+
+        for exc in dataset.exchanges():
+            try:
+                exc.input
+            except UnknownObject:
+                exc.input = dataset
+                exc.save()
+                logger.debug(
+                    "Edge to deleted readonly process redirected to parent process: %s",
+                    exc,
+                )
+
+    else:
+        # Process or chimaera process with one functional edge
+        # Make sure that single functional edge is not referring to obsolete readonly process
+        functional_edges = [exc for exc in dataset.exchanges() if exc.get("functional")]
+        if not len(functional_edges) < 2:
+            raise ValueError(
+                f"Process marked monofunctional with type {dataset['type']} but has {len(functional_edges)} functional edges"
+            )
+        edge = functional_edges[0]
+        if edge.input["type"] in (
+            "readonly_process",
+        ):  # TBD https://github.com/brightway-lca/multifunctional/issues/23
+            # This node should be deleted; have to change to chimaera process with self-input
+            logger.debug(
+                "Edge to expired readonly process %s redirected to parent process %s",
+                edge.input,
+                dataset,
+            )
+            edge.input = dataset
+            edge.save()
+            if dataset["type"] != labels.chimaera_node_default:
+                logger.debug(
+                    "Change node type to chimaera: %s (%s)",
+                    dataset,
+                    dataset.id,
+                )
+                dataset["type"] = labels.chimaera_node_default
+
+        # Obsolete readonly processes
+        for ds in MultifunctionalDatabase(dataset["database"]):
+            if ds["type"] in ("readonly_process",) and ds.get("mf_parent_key") == dataset.key:
+                ds.delete()

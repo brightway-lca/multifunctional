@@ -80,6 +80,7 @@ def test_allocation_sets_code_for_zero_allocation_products_in_multifunctional_pr
                 },
             ],
             "type": "multifunctional",
+            "mf_was_once_allocated": True,
             "mf_strategy_label": "property allocation by 'manual_allocation'",
             "name": "(unknown)",
             "location": None,
@@ -153,4 +154,8 @@ def test_allocation_sets_code_for_zero_allocation_products_in_multifunctional_pr
             "database": "db",
         },
     ]
-    assert allocation_strategies["manual_allocation"](given) == expected
+    result = allocation_strategies["manual_allocation"](given)
+    for node in result:
+        if "mf_allocation_run_uuid" in node:
+            del node["mf_allocation_run_uuid"]
+    assert result == expected

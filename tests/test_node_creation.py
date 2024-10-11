@@ -34,7 +34,7 @@ def test_node_creation_default_label():
         assert node["name"] == "foo"
         assert node["database"] == "test database"
         assert node["code"]
-        assert node["type"] == bd.labels.process_node_default
+        assert node["type"] == bd.labels.chimaera_node_default
 
 
 @bw2test
