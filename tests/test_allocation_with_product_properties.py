@@ -8,9 +8,7 @@ from multifunctional.node_classes import (
 
 
 def check_products_allocation_results(factor_1, factor_2, database):
-    nodes = sorted(
-        database, key=lambda x: (x["name"], x.get("reference product", ""), x["type"])
-    )
+    nodes = sorted(database, key=lambda x: (x["name"], x.get("reference product", ""), x["type"]))
 
     assert isinstance(nodes[0], MaybeMultifunctionalProcess)
     assert nodes[0]["name"] == "first product"
@@ -170,9 +168,7 @@ def test_allocation_uses_existing(product_properties):
 def test_allocation_already_allocated(product_properties):
     product_properties.metadata["default_allocation"] = "price"
     bd.get_node(code="1").allocate()
-    node = sorted(
-        product_properties, key=lambda x: (x["name"], x.get("reference product", ""))
-    )[3]
+    node = sorted(product_properties, key=lambda x: (x["name"], x.get("reference product", "")))[3]
 
     assert generic_allocation(node, None) == []
 

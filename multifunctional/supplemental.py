@@ -4,9 +4,7 @@ import bw2data as bd
 def add_product_node_properties_to_exchange(obj: dict) -> dict:
     """Add properties from products to the exchange to make them available during allocation."""
     this = (obj["database"], obj["code"])
-    for exc in filter(
-        lambda x: x.get("functional") and "input" in x, obj.get("exchanges", [])
-    ):
+    for exc in filter(lambda x: x.get("functional") and "input" in x, obj.get("exchanges", [])):
         if exc.get("type") == "production":
             # Keep as separate because it should eventually be an output, not an input...
             other = exc["input"]

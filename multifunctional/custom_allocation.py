@@ -3,7 +3,7 @@ from copy import copy
 from dataclasses import dataclass
 from enum import Enum
 from numbers import Number
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 from blinker import signal
 from bw2data import Database, databases
@@ -65,9 +65,7 @@ def list_available_properties(database_label: str, target_process: Optional[Node
     results = []
     all_properties = set()
 
-    for ds in filter(
-        lambda x: x["type"] == "multifunctional", Database(database_label)
-    ):
+    for ds in filter(lambda x: x["type"] == "multifunctional", Database(database_label)):
         for edge in filter(lambda x: x.get("functional"), ds.exchanges()):
             for key in _get_unified_properties(edge):
                 all_properties.add(key)
@@ -110,15 +108,12 @@ def check_property_for_process_allocation(
     if messages is None:
         messages = []
 
-    if process['type'] != "multifunctional":
+    if process["type"] != "multifunctional":
         return True
 
     for edge in filter(lambda x: x.get("functional"), process.exchanges()):
         properties = _get_unified_properties(edge)
-        if (
-            property_label not in properties
-            and edge.input["type"] != "readonly_process"
-        ):
+        if property_label not in properties and edge.input["type"] != "readonly_process":
             messages.append(
                 PropertyMessage(
                     level=logging.WARNING,
@@ -260,12 +255,8 @@ def update_allocation_strategies_on_project_change(
     for obsolete in set(allocation_strategies).difference(DEFAULT_ALLOCATIONS):
         del allocation_strategies[obsolete]
 
-    for key, value in project_dataset.data.get(
-        "multifunctional.custom_allocations", {}
-    ).items():
+    for key, value in project_dataset.data.get("multifunctional.custom_allocations", {}).items():
         allocation_strategies[key] = property_allocation(**value)
 
 
-signal("bw2data.project_changed").connect(
-    update_allocation_strategies_on_project_change
-)
+signal("bw2data.project_changed").connect(update_allocation_strategies_on_project_change)

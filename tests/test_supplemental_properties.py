@@ -6,9 +6,7 @@ from multifunctional.supplemental import add_product_node_properties_to_exchange
 
 @bw2test
 def test_not_overwrite_properties():
-    bd.Database("foo").write(
-        {("foo", "1"): {"properties": {"first": True, "second": False}}}
-    )
+    bd.Database("foo").write({("foo", "1"): {"properties": {"first": True, "second": False}}})
     data = {
         "database": "foo",
         "code": "2",
@@ -39,9 +37,7 @@ def test_not_overwrite_properties():
 
 @bw2test
 def test_update_properties_production():
-    bd.Database("foo").write(
-        {("foo", "1"): {"properties": {"first": True, "second": False}}}
-    )
+    bd.Database("foo").write({("foo", "1"): {"properties": {"first": True, "second": False}}})
     data = {
         "database": "foo",
         "code": "2",
@@ -71,9 +67,7 @@ def test_update_properties_production():
 
 @bw2test
 def test_update_properties_technosphere():
-    bd.Database("foo").write(
-        {("foo", "1"): {"properties": {"first": True, "second": False}}}
-    )
+    bd.Database("foo").write({("foo", "1"): {"properties": {"first": True, "second": False}}})
     data = {
         "database": "foo",
         "code": "2",
@@ -103,9 +97,7 @@ def test_update_properties_technosphere():
 
 @bw2test
 def test_not_update_properties_other():
-    bd.Database("foo").write(
-        {("foo", "1"): {"properties": {"first": True, "second": False}}}
-    )
+    bd.Database("foo").write({("foo", "1"): {"properties": {"first": True, "second": False}}})
     data = {
         "database": "foo",
         "code": "2",
@@ -133,9 +125,7 @@ def test_not_update_properties_other():
 
 @bw2test
 def test_skip_exc_without_input():
-    bd.Database("foo").write(
-        {("foo", "1"): {"properties": {"first": True, "second": False}}}
-    )
+    bd.Database("foo").write({("foo", "1"): {"properties": {"first": True, "second": False}}})
     data = {
         "database": "foo",
         "code": "2",
@@ -160,9 +150,7 @@ def test_skip_exc_without_input():
 
 
 def test_get_properties_different_database():
-    bd.Database("bar").write(
-        {("bar", "1"): {"properties": {"first": True, "second": False}}}
-    )
+    bd.Database("bar").write({("bar", "1"): {"properties": {"first": True, "second": False}}})
     data = {
         "database": "foo",
         "code": "2",

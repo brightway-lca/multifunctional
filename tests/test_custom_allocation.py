@@ -5,17 +5,14 @@ from bw2data import get_node, projects
 from bw2data.tests import bw2test
 
 from multifunctional import (
+    MultifunctionalDatabase,
     add_custom_property_allocation_to_project,
     allocation_strategies,
     check_property_for_allocation,
     check_property_for_process_allocation,
     list_available_properties,
-    MultifunctionalDatabase,
 )
-from multifunctional.custom_allocation import (
-    DEFAULT_ALLOCATIONS,
-    MessageType,
-)
+from multifunctional.custom_allocation import DEFAULT_ALLOCATIONS, MessageType
 
 
 @bw2test

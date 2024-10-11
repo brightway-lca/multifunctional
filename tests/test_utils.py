@@ -1,6 +1,6 @@
-from loguru import logger
 import bw2data as bd
 import pytest
+from loguru import logger
 
 from multifunctional.utils import (
     add_exchange_input_if_missing,

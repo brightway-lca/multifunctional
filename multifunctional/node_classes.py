@@ -7,7 +7,11 @@ from loguru import logger
 
 from .edge_classes import ReadOnlyExchanges
 from .errors import NoAllocationNeeded
-from .utils import product_as_process_name, update_datasets_from_allocation_results
+from .utils import (
+    product_as_process_name,
+    set_correct_process_type,
+    update_datasets_from_allocation_results,
+)
 
 
 class BaseMultifunctionalNode(Activity):
@@ -63,9 +67,7 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
                 "Can't find `default_allocation` in input arguments, or process/database metadata."
             )
         if strategy_label not in allocation_strategies:
-            raise KeyError(
-                f"Given strategy label {strategy_label} not in `allocation_strategies`"
-            )
+            raise KeyError(f"Given strategy label {strategy_label} not in `allocation_strategies`")
 
         logger.debug(
             "Allocating {p} (id: {i}) with strategy {s}",
@@ -126,46 +128,32 @@ class ReadOnlyProcessWithReferenceProduct(BaseMultifunctionalNode):
 
     def exchanges(self, exchanges_class=None):
         if exchanges_class is not None:
-            warnings.warn(
-                "`exchanges_class` argument ignored; must be `ReadOnlyExchanges`"
-            )
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().exchanges(exchanges_class=ReadOnlyExchanges)
 
     def technosphere(self, exchanges_class=None):
         if exchanges_class is not None:
-            warnings.warn(
-                "`exchanges_class` argument ignored; must be `ReadOnlyExchanges`"
-            )
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().technosphere(exchanges_class=ReadOnlyExchanges)
 
     def biosphere(self, exchanges_class=None):
         if exchanges_class is not None:
-            warnings.warn(
-                "`exchanges_class` argument ignored; must be `ReadOnlyExchanges`"
-            )
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().biosphere(exchanges_class=ReadOnlyExchanges)
 
     def production(self, include_substitution=False, exchanges_class=None):
         if exchanges_class is not None:
-            warnings.warn(
-                "`exchanges_class` argument ignored; must be `ReadOnlyExchanges`"
-            )
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().production(
             include_substitution=include_substitution, exchanges_class=ReadOnlyExchanges
         )
 
     def substitution(self, exchanges_class=None):
         if exchanges_class is not None:
-            warnings.warn(
-                "`exchanges_class` argument ignored; must be `ReadOnlyExchanges`"
-            )
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().substitution(exchanges_class=ReadOnlyExchanges)
 
-    def upstream(
-        self, kinds=labels.technosphere_negative_edge_types, exchanges_class=None
-    ):
+    def upstream(self, kinds=labels.technosphere_negative_edge_types, exchanges_class=None):
         if exchanges_class is not None:
-            warnings.warn(
-                "`exchanges_class` argument ignored; must be `ReadOnlyExchanges`"
-            )
+            warnings.warn("`exchanges_class` argument ignored; must be `ReadOnlyExchanges`")
         return super().upstream(kinds=kinds, exchanges_class=ReadOnlyExchanges)

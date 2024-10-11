@@ -1,8 +1,5 @@
 from bw2data import labels
-from bw2data.subclass_mapping import (
-    DATABASE_BACKEND_MAPPING,
-    NODE_PROCESS_CLASS_MAPPING,
-)
+from bw2data.subclass_mapping import DATABASE_BACKEND_MAPPING, NODE_PROCESS_CLASS_MAPPING
 from bw2data.tests import bw2test
 
 

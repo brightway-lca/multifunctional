@@ -23,25 +23,19 @@ from loguru import logger
 logger.disable("multifunctional")
 
 from bw2data import labels
-from bw2data.subclass_mapping import (
-    DATABASE_BACKEND_MAPPING,
-    NODE_PROCESS_CLASS_MAPPING,
-)
+from bw2data.subclass_mapping import DATABASE_BACKEND_MAPPING, NODE_PROCESS_CLASS_MAPPING
 
 from .allocation import allocation_strategies, generic_allocation, property_allocation
-from .database import MultifunctionalDatabase
-from .node_classes import (
-    MaybeMultifunctionalProcess,
-    ReadOnlyProcessWithReferenceProduct,
-)
-from .node_dispatch import multifunctional_node_dispatcher
-from .utils import allocation_before_writing
 from .custom_allocation import (
     add_custom_property_allocation_to_project,
     check_property_for_allocation,
     check_property_for_process_allocation,
     list_available_properties,
 )
+from .database import MultifunctionalDatabase
+from .node_classes import MaybeMultifunctionalProcess, ReadOnlyProcessWithReferenceProduct
+from .node_dispatch import multifunctional_node_dispatcher
+from .utils import allocation_before_writing
 
 DATABASE_BACKEND_MAPPING["multifunctional"] = MultifunctionalDatabase
 NODE_PROCESS_CLASS_MAPPING["multifunctional"] = multifunctional_node_dispatcher

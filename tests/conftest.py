@@ -3,12 +3,12 @@ from copy import deepcopy
 import pytest
 from bw2data.tests import bw2test
 from fixtures.basic import DATA as BASIC_DATA
+from fixtures.errors import DATA as ERRORS_DATA
 from fixtures.internal_linking import DATA as INTERNAL_LINKING_DATA
 from fixtures.product_properties import DATA as PP_DATA
 from fixtures.products import DATA as PRODUCT_DATA
-from fixtures.errors import DATA as ERRORS_DATA
 
-from multifunctional import allocation_before_writing, MultifunctionalDatabase
+from multifunctional import MultifunctionalDatabase, allocation_before_writing
 
 
 @pytest.fixture
