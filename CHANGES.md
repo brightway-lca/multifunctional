@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9] - 2024-10-10
+
+* Fix [#15: Cleanup database if edges change from functional to nonfunctional](https://github.com/brightway-lca/multifunctional/issues/15)
+
 ## [0.8.1] - 2024-10-03
 
 * Fix errors with manual node creation
