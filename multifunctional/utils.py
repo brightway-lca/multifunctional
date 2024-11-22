@@ -74,13 +74,16 @@ def update_datasets_from_allocation_results(data: List[dict]) -> None:
         except UnknownObject:
             node = ReadOnlyProcessWithReferenceProduct(**ds)
 
+        # .save() calls purge_expired_linked_readonly_processes(), which will delete existing
+        # read-only processes (we have a new allocation and therefore a new mf_allocation_run_uuid)
         node.save()
 
         # Delete existing edges. Much easier than trying to find the right one to update.
-        ExchangeDataset.delete().where(
+        for edge in ExchangeDataset.select().where(
             ExchangeDataset.output_code == ds["code"],
             ExchangeDataset.output_database == ds["database"],
-        ).execute()
+        ):
+            edge.delete_instance()
 
         for exc_data in exchanges:
             exc = Exchange()
