@@ -32,10 +32,10 @@ class MaybeMultifunctionalProcess(BaseMultifunctionalNode):
 
     Sets flag on save if multifunctional."""
 
-    def save(self):
+    def save(self, *args, **kwargs):
         set_correct_process_type(self)
         purge_expired_linked_readonly_processes(self)
-        super().save()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         base = super().__str__()
