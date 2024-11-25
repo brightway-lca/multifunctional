@@ -247,3 +247,24 @@ def test_allocation_zero_factor_still_gives_process():
         (exc.input, exc["amount"])
         for exc in bd.get_node(name="process - 1", unit="megajoule").edges()
     ]
+
+
+def test_name_replacement_mfp(name_change):
+    name_change.metadata["default_allocation"] = "price"
+    bd.get_node(code="1").allocate()
+    assert {ds["name"] for ds in name_change} == {
+        "flow - a",
+        "MFP: Longer name because like⧺Long name look here wut",
+        "Longer name because like reasons (read-only process)",
+        "Long name look here wut, wut (read-only process)",
+    }
+
+
+def test_name_replacement_not_mfp(name_change):
+    name_change.metadata["default_allocation"] = "price"
+
+    node = bd.get_node(code="1")
+    node['name'] = "Replace me"
+    node.save()
+    node.allocate()
+    assert sorted(ds["name"] for ds in name_change) == ["Replace me"] * 3 + ["flow - a"]

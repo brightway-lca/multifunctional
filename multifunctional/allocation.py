@@ -127,6 +127,10 @@ def generic_allocation(
             del allocated_process["id"]
         if strategy_label:
             allocated_process["mf_strategy_label"] = act["mf_strategy_label"] = strategy_label
+        if "name" in allocated_process and allocated_process["name"].startswith("MFP: "):
+            allocated_process["name"] = (product or new_exc).get(
+                "name", allocated_process["name"]
+            ) + " (read-only process)"
         allocated_process["code"] = process_code
         allocated_process["mf_parent_key"] = (act["database"], act["code"])
         # Used to filter out previous read only processes

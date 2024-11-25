@@ -99,30 +99,30 @@ def test_change_multifunctional_reduce_num_still_multifunctional(many_products):
     assert bd.get_node(code="1")["type"] == "multifunctional"
     assert len(many_products) == 8
 
-    exc = [exc for exc in bd.get_node(code="1").exchanges() if exc.input['code'] == 'p1'][0]
+    exc = [exc for exc in bd.get_node(code="1").exchanges() if exc.input["code"] == "p1"][0]
     assert exc["functional"]
     exc["functional"] = False
     exc.save()
     bd.get_node(code="1").allocate()
     assert bd.get_node(code="1")["mf_was_once_allocated"]
-    assert bd.get_node(code="1")["type"] == 'multifunctional'
+    assert bd.get_node(code="1")["type"] == "multifunctional"
     assert len(many_products) == 7
 
-    exc = [exc for exc in bd.get_node(code="1").exchanges() if exc.input['code'] == 'p1'][0]
+    exc = [exc for exc in bd.get_node(code="1").exchanges() if exc.input["code"] == "p1"][0]
     exc["functional"] = True
     exc.save()
     bd.get_node(code="1").allocate()
     assert bd.get_node(code="1")["type"] == "multifunctional"
     assert len(many_products) == 8
 
-    exc = [exc for exc in bd.get_node(code="1").exchanges() if exc.input['code'] == 'p1'][0]
+    exc = [exc for exc in bd.get_node(code="1").exchanges() if exc.input["code"] == "p1"][0]
     exc["functional"] = False
     exc.save()
     bd.get_node(code="1").allocate()
     assert bd.get_node(code="1")["type"] == "multifunctional"
     assert len(many_products) == 7
 
-    exc = [exc for exc in bd.get_node(code="1").exchanges() if exc.input['code'] == 'p1'][0]
+    exc = [exc for exc in bd.get_node(code="1").exchanges() if exc.input["code"] == "p1"][0]
     exc["functional"] = True
     exc.save()
     bd.get_node(code="1").allocate()
