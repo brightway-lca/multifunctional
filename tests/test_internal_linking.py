@@ -41,7 +41,7 @@ def test_internal_linking_results_mf_process_2(internal):
         ("internal", "second - generated"),
         ("internal", "🐶"),
     }
-    assert {exc["mf_manual_input_product"] for exc in p.production()} == {True, False}
+    assert {exc["mf_manual_input_product"] for exc in p.production()} == {True}
     assert {exc["mf_allocated"] for exc in p.production()} == {True}
     assert {exc.get("mf_artificial_code") for exc in p.production()} == {None}
 

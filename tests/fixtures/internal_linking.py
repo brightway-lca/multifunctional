@@ -15,6 +15,16 @@ DATA = {
         "name": "woof",
         "unit": "kg",
     },
+    ("internal", "first - generated"): {
+        "type": "product",
+        "name": "first product",
+        "unit": "megajoule",
+    },
+    ("internal", "second - generated"): {
+        "type": "product",
+        "name": "second product",
+        "unit": "megajoule",
+    },
     ("internal", "1"): {
         "name": "process - 1",
         "location": "first",
@@ -34,8 +44,7 @@ DATA = {
                 "functional": True,
                 "type": "production",
                 "name": "second product - 1",
-                "unit": "megajoule",
-                "desired_code": "first - generated",
+                "input": ("internal", "first - generated"),
                 "amount": 6,
                 "properties": {
                     "price": 12,
@@ -69,9 +78,7 @@ DATA = {
             {
                 "functional": True,
                 "type": "production",
-                "name": "second product - 1",
-                "desired_code": "second - generated",
-                "unit": "megajoule",
+                "input": ("internal", "second - generated"),
                 "amount": 50,
                 "properties": {
                     "price": 2,
