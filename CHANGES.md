@@ -1,5 +1,9 @@
 # `multifunctional` Changelog
 
+## [1.0] - 2025-06-26
+
+* Remove version pin to Numpy `<2`
+
 ## [1.0] - 2024-11-25
 
 * Compatibility with `bw2data` 4.0
