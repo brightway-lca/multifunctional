@@ -1,6 +1,10 @@
 # `multifunctional` Changelog
 
-## [1.0] - 2025-06-26
+### [1.1.1] - 2025-06-26
+
+* Update some tests and publishing infrastructure
+
+## [1.1] - 2025-06-26
 
 * Remove version pin to Numpy `<2`
 
