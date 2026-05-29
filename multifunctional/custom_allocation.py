@@ -249,13 +249,13 @@ def add_custom_property_allocation_to_project(
 
 
 def update_allocation_strategies_on_project_change(
-    project_dataset: ProjectDataset,
+    sender, *, dataset: ProjectDataset, **kwargs
 ) -> None:
     """Fix the single dict `allocation_strategies` to reflect custom data for this project."""
     for obsolete in set(allocation_strategies).difference(DEFAULT_ALLOCATIONS):
         del allocation_strategies[obsolete]
 
-    for key, value in project_dataset.data.get("multifunctional.custom_allocations", {}).items():
+    for key, value in dataset.data.get("multifunctional.custom_allocations", {}).items():
         allocation_strategies[key] = property_allocation(**value)
 
 
