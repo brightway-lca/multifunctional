@@ -249,9 +249,13 @@ def add_custom_property_allocation_to_project(
 
 
 def update_allocation_strategies_on_project_change(
-    sender, *, dataset: ProjectDataset, **kwargs
+    sender, dataset: Optional[ProjectDataset] = None, **kwargs
 ) -> None:
     """Fix the single dict `allocation_strategies` to reflect custom data for this project."""
+    # bw2data 4.7 and earlier send the `ProjectDataset` as the sender; later versions send
+    # the `ProjectManager` as the sender and the `ProjectDataset` as `dataset`.
+    if dataset is None:
+        dataset = sender
     for obsolete in set(allocation_strategies).difference(DEFAULT_ALLOCATIONS):
         del allocation_strategies[obsolete]
 
