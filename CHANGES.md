@@ -1,5 +1,10 @@
 # `multifunctional` Changelog
 
+### [Unreleased]
+
+* Make `update_allocation_strategies_on_project_change` compatible with the corrected blinker `signal.send()` API in the next `bw2data` release, while still supporting `bw2data` 4.7 and earlier ([bw2data#288](https://github.com/brightway-lca/brightway2-data/issues/288))
+* Test on Python 3.10 and 3.14 with current GitHub Actions runners
+
 ### [1.1.1] - 2025-06-26
 
 * Update some tests and publishing infrastructure
